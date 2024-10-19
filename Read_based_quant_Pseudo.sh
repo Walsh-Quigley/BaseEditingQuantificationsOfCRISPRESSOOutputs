@@ -29,3 +29,6 @@
 #convert alleles table to csv
 
 #pull any line that matches an index of the MasterArray
+
+
+#Just figuring out if I can figure out how to push changes to github
