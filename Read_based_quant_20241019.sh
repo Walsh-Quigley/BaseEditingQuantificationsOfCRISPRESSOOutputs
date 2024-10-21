@@ -45,6 +45,37 @@ generate_combinations() {
     echo "${result[@]}"
 }
 
+# Function to extract guide sequence, amplicon sequence, guide orientation, and edits
+extract_guide_info() {
+    local searchTerm="$1"
+    
+    guideSeq=$(awk -F',' -v searchTerm="$searchTerm" '$1 == searchTerm {print $2}' ./../Common_amplicon_list.csv | tr '[:lower:]' '[:upper:]' | tr -d '\r' | tr -d '-' | xargs | cut -c1-20)
+    ampSeqVar=$(awk -F',' -v searchTerm="$searchTerm" '$1 == searchTerm {print $5}' ./../Common_amplicon_list.csv | tr '[:lower:]' '[:upper:]' | tr -d '\r' | xargs)
+    guideOrientation=$(awk -F',' -v searchTerm="$searchTerm" '$1 == searchTerm {print $4}' ./../Common_amplicon_list.csv | tr '[:lower:]' '[:upper:]' | tr -d '\r' | xargs)
+    intendedEditIndex=$(awk -F',' -v searchTerm="$searchTerm" '$1 == searchTerm {print $9}' ./../Common_amplicon_list.csv )
+    permissibleEditIndex=$(awk -F',' -v searchTerm="$searchTerm" '$1 == searchTerm {print $8}' ./../Common_amplicon_list.csv )
+    
+    permissibleEditArray=($permissibleEditIndex)
+
+    echo "Index of the Intended Edit: $intendedEditIndex"
+}
+
+# Function to check if the character at intendedEditIndex in guideSeq is "A"
+check_intended_edit() {
+    local guideSeq="$1"
+    local intendedEditIndex="$2"
+
+    local index=$((intendedEditIndex - 1))  # Convert to 0-based index
+    local charAtIndex=${guideSeq:$index:1}
+
+    if [[ "$charAtIndex" == "A" ]]; then
+        echo "LINE 43: The character at position $intendedEditIndex in guideSeq is A."
+    else
+        echo "The character at position $intendedEditIndex in guideSeq is not A, it's $charAtIndex."
+    fi
+}
+
+
 
 # Editing quantification loop
 for DIR in */; do
@@ -61,55 +92,18 @@ for DIR in */; do
     # Print the search term for visibility
     echo "The search term is: $searchTerm"
     
-    # Grab relevant variables
-    guideSeq=$(awk -F',' -v searchTerm="$searchTerm" '$1 == searchTerm {print $2}' ./../Common_amplicon_list.csv | tr '[:lower:]' '[:upper:]' | tr -d '\r' | tr -d '-' | xargs | cut -c1-20 )
-    ampSeqVar=$(awk -F',' -v searchTerm="$searchTerm" '$1 == searchTerm {print $5}' ./../Common_amplicon_list.csv | tr '[:lower:]' '[:upper:]' | tr -d '\r' | xargs)
-    guideOrientation=$(awk -F',' -v searchTerm="$searchTerm" '$1 == searchTerm {print $4}' ./../Common_amplicon_list.csv | tr '[:lower:]' '[:upper:]' | tr -d '\r' | xargs)
-    intendedEditIndex=$(awk -F',' -v searchTerm="$searchTerm" '$1 == searchTerm {print $9}' ./../Common_amplicon_list.csv )
-    permissibleEditIndex=$(awk -F',' -v searchTerm="$searchTerm" '$1 == searchTerm {print $8}' ./../Common_amplicon_list.csv )
-
-    echo "LINE 29: This is the Index of the Intended Edit: $intendedEditIndex"
-
-    permissibleEditArray=($permissibleEditIndex)
+    # Extract relevant variables using the function
+    extract_guide_info "$searchTerm"
 
     # Print the array elements
-    echo "LINE 36: The silent or tolerated bystanders are at positions: ${permissibleEditArray[@]}"
+    echo "The silent or tolerated bystanders are at positions: ${permissibleEditArray[@]}"
 
-    # Check if the character at intendedEditIndex in guideSeq is "A"
-    index=$((intendedEditIndex - 1)) # Adjust for 0-based indexing
-    charAtIndex=${guideSeq:$index:1}
-
-    if [[ "$charAtIndex" == "A" ]]; then
-        echo "LINE 43: The character at position $intendedEditIndex in guideSeq is A."
-    else
-        echo "The character at position $intendedEditIndex in guideSeq is not A, it's $charAtIndex."
-    fi
+    # Call the check_intended_edit function, which handles the check and print logic
+    check_intended_edit "$guideSeq" "$intendedEditIndex"
 
     # Generate all combinations of permissible edits
     permissibleEditStrings=($(generate_combinations "$guideSeq" "$intendedEditIndex" permissibleEditArray[@]))
     echo "Permissible edit combinations generated: ${#permissibleEditStrings[@]} sequences."
-
-    # # Replace A with G at the intendedEditIndex and add to the array
-    # if [[ "$charAtIndex" == "A" ]]; then
-    #     modifiedSeqVar="${guideSeq:0:$index}G${guideSeq:$((index + 1))}" # Replace A at intended index
-    #     permissibleEditStrings+=("$modifiedSeqVar")
-    # else
-    #     echo "LINE 75: No replacement was made as the character at intendedEditIndex: $intendedEditIndex is not A."
-    # fi
-
-    # # For each permissible index, create a new sequence with A replaced by G
-    # for permissibleIndex in "${permissibleEditArray[@]}"; do
-    #     index=$((permissibleIndex - 1))  # Convert 1-based index to 0-based
-    #     charAtPermissibleIndex=${guideSeq:$index:1}
-        
-    #     # Create a new modified sequence if the character at the permissible index is A
-    #     if [[ "$charAtPermissibleIndex" == "A" ]]; then
-    #         # Construct the new sequence by switching A to G at permissible index
-    #         newModifiedSeq="${modifiedSeqVar:0:$index}G${modifiedSeqVar:$((index + 1))}"  # Use modifiedSeqVar
-    #         permissibleEditStrings+=("$newModifiedSeq")  # Add the new sequence to the array
-    #         echo "LINE 85: New modified sequence after replacing A with G at position $permissibleIndex: $newModifiedSeq"
-    #     fi
-    # done
 
     # Handle guideOrientation being "R" for reverse complement
     if [[ "$guideOrientation" == "R" ]]; then
@@ -125,7 +119,6 @@ for DIR in */; do
 
     # Print the final array of modified sequences
     echo "Final search terms with permissible edits: ${permissibleEditStrings[@]}"
-
 
     #go into the CRISPResso folder and pull out the alleles_freq table and turn it into a csv
     echo "LINE 85:$PWD"
