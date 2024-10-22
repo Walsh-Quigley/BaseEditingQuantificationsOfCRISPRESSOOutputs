@@ -137,8 +137,6 @@ for DIR in */; do
     foundMatch=false
 
     for string in "${permissibleEditStrings[@]}"; do
-        echo "LINE 140: $foundMatch"
-        
         # Use a temporary variable to store the output and check if awk matches any line
         awkResult=$(awk -v search="$string" -F',' '$1 ~ search {print $0}' "$readBasedAlignmentTable")
 
@@ -156,7 +154,6 @@ for DIR in */; do
         echo "LINE 146: NO READS ALIGNED"
     else
         # Sum the last column of the output file (excluding the header)
-        echo "$foundMatch"
         lenientCorrectionSum=$(awk -F',' 'NR>1 { total += $NF } END { print total }' "$lenientCorrection")
         echo "Lenient correction sum: $lenientCorrectionSum"
     fi

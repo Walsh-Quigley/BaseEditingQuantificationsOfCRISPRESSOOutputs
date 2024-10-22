@@ -1,4 +1,4 @@
-#Error Handleing to confirm Inteded and Permissible indexs are valid
+#Error Handling to confirm Inteded and Permissible indexs are valid
     #pull both columns (inteded and permissible)
     #splice lists together
     #for each num in list:
@@ -31,4 +31,4 @@
 #pull any line that matches an index of the MasterArray
 
 
-#Just figuring out if I can figure out how to push changes to github
+#Just figuring out if I canGIT figure out how to push changes to github
