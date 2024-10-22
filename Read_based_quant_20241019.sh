@@ -1,8 +1,31 @@
-# Function to generate reverse complement of a DNA sequence
-reverse_complement() {
-    local seq="$1"
-    # Reverse the sequence and replace the nucleotides with their complements
-    echo "$seq" | rev | tr 'ATCG' 'TAGC'
+# Function to extract guide sequence, amplicon sequence, guide orientation, and edits
+extract_guide_info() {
+    local searchTerm="$1"
+    
+    guideSeq=$(awk -F',' -v searchTerm="$searchTerm" '$1 == searchTerm {print $2}' ./../Common_amplicon_list.csv | tr '[:lower:]' '[:upper:]' | tr -d '\r' | tr -d '-' | xargs | cut -c1-20)
+    ampSeqVar=$(awk -F',' -v searchTerm="$searchTerm" '$1 == searchTerm {print $5}' ./../Common_amplicon_list.csv | tr '[:lower:]' '[:upper:]' | tr -d '\r' | xargs)
+    guideOrientation=$(awk -F',' -v searchTerm="$searchTerm" '$1 == searchTerm {print $4}' ./../Common_amplicon_list.csv | tr '[:lower:]' '[:upper:]' | tr -d '\r' | xargs)
+    intendedEditIndex=$(awk -F',' -v searchTerm="$searchTerm" '$1 == searchTerm {print $9}' ./../Common_amplicon_list.csv )
+    permissibleEditIndex=$(awk -F',' -v searchTerm="$searchTerm" '$1 == searchTerm {print $8}' ./../Common_amplicon_list.csv )
+    
+    permissibleEditArray=($permissibleEditIndex)
+
+    echo "Index of the Intended Edit: $intendedEditIndex"
+}
+
+# Function to check if the character at intendedEditIndex in guideSeq is "A"
+check_intended_edit() {
+    local guideSeq="$1"
+    local intendedEditIndex="$2"
+
+    local index=$((intendedEditIndex - 1))  # Convert to 0-based index
+    local charAtIndex=${guideSeq:$index:1}
+
+    if [[ "$charAtIndex" == "A" ]]; then
+        echo "The character at position $intendedEditIndex in guideSeq is A."
+    else
+        echo "The character at position $intendedEditIndex in guideSeq is not A, it's $charAtIndex."
+    fi
 }
 
 # Function to generate all combinations of permissible edits
@@ -45,35 +68,13 @@ generate_combinations() {
     echo "${result[@]}"
 }
 
-# Function to extract guide sequence, amplicon sequence, guide orientation, and edits
-extract_guide_info() {
-    local searchTerm="$1"
-    
-    guideSeq=$(awk -F',' -v searchTerm="$searchTerm" '$1 == searchTerm {print $2}' ./../Common_amplicon_list.csv | tr '[:lower:]' '[:upper:]' | tr -d '\r' | tr -d '-' | xargs | cut -c1-20)
-    ampSeqVar=$(awk -F',' -v searchTerm="$searchTerm" '$1 == searchTerm {print $5}' ./../Common_amplicon_list.csv | tr '[:lower:]' '[:upper:]' | tr -d '\r' | xargs)
-    guideOrientation=$(awk -F',' -v searchTerm="$searchTerm" '$1 == searchTerm {print $4}' ./../Common_amplicon_list.csv | tr '[:lower:]' '[:upper:]' | tr -d '\r' | xargs)
-    intendedEditIndex=$(awk -F',' -v searchTerm="$searchTerm" '$1 == searchTerm {print $9}' ./../Common_amplicon_list.csv )
-    permissibleEditIndex=$(awk -F',' -v searchTerm="$searchTerm" '$1 == searchTerm {print $8}' ./../Common_amplicon_list.csv )
-    
-    permissibleEditArray=($permissibleEditIndex)
-
-    echo "Index of the Intended Edit: $intendedEditIndex"
+# Function to generate reverse complement of a DNA sequence
+reverse_complement() {
+    local seq="$1"
+    # Reverse the sequence and replace the nucleotides with their complements
+    echo "$seq" | rev | tr 'ATCG' 'TAGC'
 }
 
-# Function to check if the character at intendedEditIndex in guideSeq is "A"
-check_intended_edit() {
-    local guideSeq="$1"
-    local intendedEditIndex="$2"
-
-    local index=$((intendedEditIndex - 1))  # Convert to 0-based index
-    local charAtIndex=${guideSeq:$index:1}
-
-    if [[ "$charAtIndex" == "A" ]]; then
-        echo "LINE 43: The character at position $intendedEditIndex in guideSeq is A."
-    else
-        echo "The character at position $intendedEditIndex in guideSeq is not A, it's $charAtIndex."
-    fi
-}
 
 
 
@@ -121,8 +122,8 @@ for DIR in */; do
     echo "Final search terms with permissible edits: ${permissibleEditStrings[@]}"
 
     #go into the CRISPResso folder and pull out the alleles_freq table and turn it into a csv
-    echo "LINE 85:$PWD"
-    ls
+    echo "Working Directory:$PWD"
+
     cd CRISPR*
     readBasedAlignmentTxt=$(ls Alleles_frequency_table_around_sgRNA_*.txt 2>/dev/null)
     readBasedAlignmentTable="Alleles_frequency_table_around_sgRNA.csv"
@@ -132,15 +133,37 @@ for DIR in */; do
     header=$(head -n 1 "$readBasedAlignmentTable")
     echo "$header" > "$lenientCorrection"
 
+    # Track if any matching rows are found
+    foundMatch=false
+
     for string in "${permissibleEditStrings[@]}"; do
-        awk -v search="$string" -F',' '$1 ~ search {print $0}' "$readBasedAlignmentTable" >> "$lenientCorrection"
+        echo "LINE 140: $foundMatch"
+        
+        # Use a temporary variable to store the output and check if awk matches any line
+        awkResult=$(awk -v search="$string" -F',' '$1 ~ search {print $0}' "$readBasedAlignmentTable")
+
+        # Only append if awkResult is not empty
+        if [[ -n "$awkResult" ]]; then
+            echo "$awkResult" >> "$lenientCorrection"
+            foundMatch=true
+        fi
     done
 
-    # Sum the last column of the output file (excluding the header)
-    lenientCorrectionSum=$(awk -F',' 'NR>1 { total += $NF } END { print total }' "$lenientCorrection")
+
+    # Check if no matches were found; if so, print 0
+    if ! $foundMatch; then
+        lenientCorrectionSum=0
+        echo "LINE 146: NO READS ALIGNED"
+    else
+        # Sum the last column of the output file (excluding the header)
+        echo "$foundMatch"
+        lenientCorrectionSum=$(awk -F',' 'NR>1 { total += $NF } END { print total }' "$lenientCorrection")
+        echo "Lenient correction sum: $lenientCorrectionSum"
+    fi
+
 
     # Print the sum to the console
-    echo "Sum of the last column: $lenientCorrectionSum"
+    echo "--------------"
 
     cd ..
 
