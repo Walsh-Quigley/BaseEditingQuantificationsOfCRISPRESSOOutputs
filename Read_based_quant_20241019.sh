@@ -166,7 +166,7 @@ for DIR in */; do
 
     # Combine searchTerm with extracted values and write to CSV
     final="$directoryName,$lenientCorrectionSum"
-    echo "$final" >> ./../Correction_Example.csv
+    echo "$final" >> ./../Correction_Read_Based.csv
 
     # Move back out of the directory to the main directory
     cd ..;
