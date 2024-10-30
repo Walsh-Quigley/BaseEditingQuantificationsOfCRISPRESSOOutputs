@@ -2,6 +2,8 @@
 #editing quanification loop
 for DIR in */; do
 
+    echo "------------"
+
     #move into the directory
     cd "$DIR";
 
@@ -9,22 +11,22 @@ for DIR in */; do
     directoryName=$(basename "$DIR")
 
     #turn the name into a search term for searching the spreadsheet
-    searchTerm=$(echo "$directoryName" | awk -F'[-_]' '{print $6}')
+    searchTerm=$(echo "$directoryName" | awk -F'[-]' '{print $2}')
 
 
     #Print the search term so we can have some visibility in the console
-    echo "$searchTerm"
+    echo "searchterm: $searchTerm"
     
     #grab relevant variables
     guideSeqVar=$(awk -F',' -v searchTerm="$searchTerm" '$1 == searchTerm {print $2}' ./../Common_amplicon_list.csv | tr '[:lower:]' '[:upper:]' | tr -d '\r' | tr -d '-' | xargs | cut -c1-20 )
     ampSeqVar=$(awk -F',' -v searchTerm="$searchTerm" '$1 == searchTerm {print $5}' ./../Common_amplicon_list.csv | tr '[:lower:]' '[:upper:]' | tr -d '\r' | xargs)
     guideOrientation=$(awk -F',' -v searchTerm="$searchTerm" '$1 == searchTerm {print $4}' ./../Common_amplicon_list.csv | tr '[:lower:]' '[:upper:]' | tr -d '\r' | xargs)
-
+    intendedEditIndex=$(awk -F',' -v searchTerm="$searchTerm" '$1 == searchTerm {print $9}' ./../Common_amplicon_list.csv | tr '[:lower:]' '[:upper:]' | tr -d '\r' | xargs)
 
     #Print these variables so we have visibility in the console
-    echo "line 68, guideSeqVar: $guideSeqVar"
-    echo "line 69, ampSeqVar: $ampSeqVar"
-    echo "line 70, guideOrientatino: $guideOrientation"
+    echo "guideSeqVar: $guideSeqVar"
+    echo "ampSeqVar: $ampSeqVar"
+    echo "guideOrientation: $guideOrientation"
     
     #create an empty array to store the positions of our relevant character
     positions=()
@@ -65,6 +67,8 @@ for DIR in */; do
     #turns this into text to later add to a column in a spreadsheet for more visibility to users of this code
     positionsText=$(echo "Positions of '${targetChar}': ${positions[@]}")
 
+    echo "Intended Edit location: $intendedEditIndex"
+
     #generates another array to store values of each position previously identified
     extracted_values=()
 
@@ -81,9 +85,13 @@ for DIR in */; do
     totalReads=$(awk 'NR==2 {print $1}'  ./*/CRISPResso_mapping_statistics.txt)
     readsAligned=$(awk 'NR==2 {print $3}'  ./*/CRISPResso_mapping_statistics.txt)
 
+    echo "Total Reads: $totalReads"
+    echo "Aligned Reads: $readsAligned"
+
+
 
     # Combine searchTerm with extracted values and write to CSV
-    final="$directoryName,$searchTerm,$totalReads,$readsAligned,$guideOrientation,$targetChar,$guideSeqVar,$editingWindow,$positionsText,$(IFS=,; echo "${extracted_values[*]}")"
+    final="$directoryName,$searchTerm,$totalReads,$readsAligned,$guideOrientation,$targetChar,$guideSeqVar,$editingWindow,$positionsText,$intendedEditIndex,$(IFS=,; echo "${extracted_values[*]}")"
     echo "$final" >> ./../Editing_Frequency.csv
 
 
@@ -93,4 +101,4 @@ for DIR in */; do
 done
 
 #add a header to our table
-echo -e "directoryName,sample,totalReads,readsAligned,guideOrientation,targetCharacter,guideSequence,editingWindow,positions" | cat - Editing_Frequency.csv > temp && mv temp Editing_Frequency.csv
+echo -e "directoryName,AmpliconName,totalReads,readsAligned,guideOrientation,targetCharacter,guideSequence,editingWindow,positions,intendedEditIndex" | cat - Editing_Frequency.csv > temp && mv temp Editing_Frequency.csv
