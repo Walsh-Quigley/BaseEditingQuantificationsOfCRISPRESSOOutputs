@@ -1,3 +1,16 @@
+#!/bin/bash
+
+
+# first prompt the user for delimiter and position
+echo "Enter the delimiter for extracting the search term:"
+read -r delimiter
+echo "Enter the position number for the search term:"
+read -r position
+
+
+
+
+# Next run the CRISPResso loop
 for DIR in */; do
 
     echo "----------"
@@ -8,18 +21,19 @@ for DIR in */; do
     #get the directory name
     directoryName=$(basename "$DIR")
 
-    #turn the name into a search term for searching the spreadsheet
-    searchTerm=$(echo "$directoryName" | awk -F'[-]' '{print $2}')
+    # Turn the name into a search term for searching the spreadsheet, converting to uppercase
+    searchTerm=$(echo "$directoryName" | awk -F'[-_]' '{print $2}' | tr '[:lower:]' '[:upper:]')
 
 
     #Print the search term so we can have some visibility in the console
+    #TO FIX: if the search term is in a different case then things break
     echo "Search Term: $searchTerm"
     
 
-    #grab relevant variables
-    guideSeqVar=$(awk -F',' -v searchTerm="$searchTerm" '$1 == searchTerm {print $2}' ./../Common_amplicon_list.csv | tr '[:lower:]' '[:upper:]' | tr -d '\r' | tr -d '-' | xargs | cut -c1-20 )
-    ampSeqVar=$(awk -F',' -v searchTerm="$searchTerm" '$1 == searchTerm {print $5}' ./../Common_amplicon_list.csv | tr '[:lower:]' '[:upper:]' | tr -d '\r' | xargs)
-    guideOrientation=$(awk -F',' -v searchTerm="$searchTerm" '$1 == searchTerm {print $4}' ./../Common_amplicon_list.csv | tr '[:lower:]' '[:upper:]' | tr -d '\r' | xargs)
+    # Grab relevant variables (making the search case-insensitive by converting to uppercase)
+    guideSeqVar=$(awk -F',' -v searchTerm="$searchTerm" 'toupper($1) == searchTerm {print $2}' ./../Common_amplicon_list.csv | tr '[:lower:]' '[:upper:]' | tr -d '\r' | tr -d '-' | xargs | cut -c1-20)
+    ampSeqVar=$(awk -F',' -v searchTerm="$searchTerm" 'toupper($1) == searchTerm {print $5}' ./../Common_amplicon_list.csv | tr '[:lower:]' '[:upper:]' | tr -d '\r' | xargs)
+    guideOrientation=$(awk -F',' -v searchTerm="$searchTerm" 'toupper($1) == searchTerm {print $4}' ./../Common_amplicon_list.csv | tr '[:lower:]' '[:upper:]' | tr -d '\r' | xargs)
 
 
     #Print these variables so we have visibility in the console

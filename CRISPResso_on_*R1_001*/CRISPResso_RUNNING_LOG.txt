@@ -1,0 +1,44 @@
+CRISPResso version 2.2.12
+[Command used]:
+/Users/aidanq/miniconda/bin/CRISPResso --fastq_r1 *R1_001.fastq* --amplicon_seq  --guide_seq  --quantification_window_size 10 --quantification_window_center -10 --base_editor_output
+
+[Execution log]:
+Traceback (most recent call last):
+  File "/Users/aidanq/miniconda/lib/python3.10/site-packages/CRISPResso2/CRISPRessoShared.py", line 527, in check_file
+    with open(filename):
+FileNotFoundError: [Errno 2] No such file or directory: '*R1_001.fastq*'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/aidanq/miniconda/lib/python3.10/site-packages/CRISPResso2/CRISPRessoCORE.py", line 1054, in main
+    CRISPRessoShared.check_file(args.fastq_r1)
+  File "/Users/aidanq/miniconda/lib/python3.10/site-packages/CRISPResso2/CRISPRessoShared.py", line 547, in check_file
+    raise BadParameterException(
+CRISPResso2.CRISPRessoShared.BadParameterException: The specified file '*R1_001.fastq*' cannot be opened.
+Available files in current directory:
+	.Rhistory
+	Read_based_quant.sh
+	CRISPResso_on_*R1_001*
+	CRISPResso_Loop.sh
+	README.md
+	userIn.sh
+	folderHelperFunction.sh
+	.git
+	Independent_based_quant.sh
+	Common_amplicon_list.csv
+
+Parameter error, please check your input.
+
+ERROR: The specified file '*R1_001.fastq*' cannot be opened.
+Available files in current directory:
+	.Rhistory
+	Read_based_quant.sh
+	CRISPResso_on_*R1_001*
+	CRISPResso_Loop.sh
+	README.md
+	userIn.sh
+	folderHelperFunction.sh
+	.git
+	Independent_based_quant.sh
+	Common_amplicon_list.csv

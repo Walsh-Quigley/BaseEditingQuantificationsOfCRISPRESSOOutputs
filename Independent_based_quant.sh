@@ -11,7 +11,7 @@ for DIR in */; do
     directoryName=$(basename "$DIR")
 
     #turn the name into a search term for searching the spreadsheet
-    searchTerm=$(echo "$directoryName" | awk -F'[-]' '{print $2}')
+    searchTerm=$(echo "$directoryName" | awk -F'[-_]' '{print $2}')
 
 
     #Print the search term so we can have some visibility in the console
@@ -92,7 +92,7 @@ for DIR in */; do
 
     # Combine searchTerm with extracted values and write to CSV
     final="$directoryName,$searchTerm,$totalReads,$readsAligned,$guideOrientation,$targetChar,$guideSeqVar,$editingWindow,$positionsText,$intendedEditIndex,$(IFS=,; echo "${extracted_values[*]}")"
-    echo "$final" >> ./../Editing_Frequency.csv
+    echo "$final" >> ./../Independent_Editing_Frequency.csv
 
 
     #move back out of the directory to the main directory
@@ -101,4 +101,4 @@ for DIR in */; do
 done
 
 #add a header to our table
-echo -e "directoryName,AmpliconName,totalReads,readsAligned,guideOrientation,targetCharacter,guideSequence,editingWindow,positions,intendedEditIndex" | cat - Editing_Frequency.csv > temp && mv temp Editing_Frequency.csv
+echo -e "directoryName,AmpliconName,totalReads,readsAligned,guideOrientation,targetCharacter,guideSequence,editingWindow,positions,intendedEditIndex" | cat - Independent_Editing_Frequency.csv > temp && mv temp Independent_Editing_Frequency.csv

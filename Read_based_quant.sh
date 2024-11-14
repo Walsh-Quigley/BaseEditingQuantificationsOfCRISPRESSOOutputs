@@ -1,24 +1,46 @@
 # Function to extract guide sequence, amplicon sequence, guide orientation, and edits
 extract_guide_info() {
+    echo "Current Directory: $DIR"
     local searchTerm="$1"
     
     guideSeq=$(awk -F',' -v searchTerm="$searchTerm" '$1 == searchTerm {print $2}' ./../Common_amplicon_list.csv | tr '[:lower:]' '[:upper:]' | tr -d '\r' | tr -d '-' | xargs | cut -c1-20)
     ampSeqVar=$(awk -F',' -v searchTerm="$searchTerm" '$1 == searchTerm {print $5}' ./../Common_amplicon_list.csv | tr '[:lower:]' '[:upper:]' | tr -d '\r' | xargs)
     guideOrientation=$(awk -F',' -v searchTerm="$searchTerm" '$1 == searchTerm {print $4}' ./../Common_amplicon_list.csv | tr '[:lower:]' '[:upper:]' | tr -d '\r' | xargs)
-    intendedEditIndex=$(awk -F',' -v searchTerm="$searchTerm" '$1 == searchTerm {print $9}' ./../Common_amplicon_list.csv )
-    permissibleEditIndex=$(awk -F',' -v searchTerm="$searchTerm" '$1 == searchTerm {print $8}' ./../Common_amplicon_list.csv )
+   
+    # Retrieve intendedEditIndex and clean it up
+    intendedEditIndex=$(awk -F',' -v searchTerm="$searchTerm" '$1 == searchTerm {print $9}' ./../Common_amplicon_list.csv | tr -d '\r' | xargs)
+    permissibleEditIndex=$(awk -F',' -v searchTerm="$searchTerm" '$1 == searchTerm {print $8}' ./../Common_amplicon_list.csv | tr -d '\r' | xargs)
     
     permissibleEditArray=($permissibleEditIndex)
 
-    echo "Index of the Intended Edit: $intendedEditIndex"
+    echo "Extracted Intended Edit Index (before conversion): $intendedEditIndex"
+
+    # Validate the intendedEditIndex before attempting conversion
+    if [[ -z "$intendedEditIndex" || ! "$intendedEditIndex" =~ ^[0-9]+$ ]]; then
+        echo "Error: intendedEditIndex is empty or not a valid integer."
+        return 1
+    fi
+
+    # Convert intendedEditIndex to an integer if valid
+    intendedEditIndex=$(printf "%d" "$intendedEditIndex")
+    echo "Intended Edit Index (after conversion): $intendedEditIndex"
 }
+
 
 # Function to check if the character at intendedEditIndex in guideSeq is "A"
 check_intended_edit() {
+
     local guideSeq="$1"
     local intendedEditIndex="$2"
 
-    local index=$((intendedEditIndex - 1))  # Convert to 0-based index
+        # Check if intendedEditIndex is a valid integer
+    if [[ -z "$intendedEditIndex" || ! "$intendedEditIndex" =~ ^[0-9]+$ ]]; then
+        echo "Error: intendedEditIndex is empty or not a valid integer."
+        return 1
+    fi
+
+    local index=$(($intendedEditIndex - 1))  # Convert to 0-based index
+
     local charAtIndex=${guideSeq:$index:1}
 
     if [[ "$charAtIndex" == "A" ]]; then
@@ -46,7 +68,6 @@ generate_combinations() {
     local numPermissible=${#permissibleEditArray[@]}
     local numCombinations=$((2 ** numPermissible))
 
-
     for (( i=1; i<numCombinations; i++ )); do
         modifiedSeq="$firstEdit"  
 
@@ -66,6 +87,8 @@ generate_combinations() {
     done
 
     echo "${result[@]}"
+
+
 }
 
 # Function to generate reverse complement of a DNA sequence
@@ -76,10 +99,10 @@ reverse_complement() {
 }
 
 
-
-
 # Editing quantification loop
 for DIR in */; do
+
+    echo "--------------"
 
     # Move into the directory
     cd "$DIR";
@@ -88,7 +111,7 @@ for DIR in */; do
     directoryName=$(basename "$DIR")
 
     # Turn the name into a search term for searching the spreadsheet
-    searchTerm=$(echo "$directoryName" | awk -F'[-]' '{print $2}')
+    searchTerm=$(echo "$directoryName" | awk -F'[-_]' '{print $2}')
 
     # Print the search term for visibility
     echo "The search term is: $searchTerm"
@@ -103,7 +126,9 @@ for DIR in */; do
     check_intended_edit "$guideSeq" "$intendedEditIndex"
 
     # Generate all combinations of permissible edits
-    permissibleEditStrings=($(generate_combinations "$guideSeq" "$intendedEditIndex" permissibleEditArray[@]))
+    permissibleEditStrings=()
+
+    permissibleEditStrings=($(generate_combinations "$guideSeq" "$intendedEditIndex" permissibleEditArray[@] | tail -n 1))
     echo "Permissible edit combinations generated: ${#permissibleEditStrings[@]} sequences."
 
     # Handle guideOrientation being "R" for reverse complement
@@ -122,8 +147,6 @@ for DIR in */; do
     echo "Final search terms with permissible edits: ${permissibleEditStrings[@]}"
 
     #go into the CRISPResso folder and pull out the alleles_freq table and turn it into a csv
-    echo "Working Directory:$PWD"
-
     cd CRISPR*
     readBasedAlignmentTxt=$(ls Alleles_frequency_table_around_sgRNA_*.txt 2>/dev/null)
     readBasedAlignmentTable="Alleles_frequency_table_around_sgRNA.csv"
@@ -158,9 +181,6 @@ for DIR in */; do
         echo "Lenient correction sum: $lenientCorrectionSum"
     fi
 
-
-    # Print the sum to the console
-    echo "--------------"
 
     cd ..
 
