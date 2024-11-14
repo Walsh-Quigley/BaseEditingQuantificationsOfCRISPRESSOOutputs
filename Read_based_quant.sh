@@ -2,14 +2,17 @@
 extract_guide_info() {
     echo "Current Directory: $DIR"
     local searchTerm="$1"
+
+    # Convert searchTerm to uppercase for case-insensitive matching
+    searchTerm=$(echo "$searchTerm" | tr '[:lower:]' '[:upper:]')
     
-    guideSeq=$(awk -F',' -v searchTerm="$searchTerm" '$1 == searchTerm {print $2}' ./../Common_amplicon_list.csv | tr '[:lower:]' '[:upper:]' | tr -d '\r' | tr -d '-' | xargs | cut -c1-20)
-    ampSeqVar=$(awk -F',' -v searchTerm="$searchTerm" '$1 == searchTerm {print $5}' ./../Common_amplicon_list.csv | tr '[:lower:]' '[:upper:]' | tr -d '\r' | xargs)
-    guideOrientation=$(awk -F',' -v searchTerm="$searchTerm" '$1 == searchTerm {print $4}' ./../Common_amplicon_list.csv | tr '[:lower:]' '[:upper:]' | tr -d '\r' | xargs)
+    # Extract guideSeq, ampSeqVar, guideOrientation, and edit indices
+    guideSeq=$(awk -F',' -v searchTerm="$searchTerm" 'toupper($1) == searchTerm {print $2}' ./../Common_amplicon_list.csv | tr '[:lower:]' '[:upper:]' | tr -d '\r' | tr -d '-' | xargs | cut -c1-20)
+    ampSeqVar=$(awk -F',' -v searchTerm="$searchTerm" 'toupper($1) == searchTerm {print $5}' ./../Common_amplicon_list.csv | tr '[:lower:]' '[:upper:]' | tr -d '\r' | xargs)
+    guideOrientation=$(awk -F',' -v searchTerm="$searchTerm" 'toupper($1) == searchTerm {print $4}' ./../Common_amplicon_list.csv | tr '[:lower:]' '[:upper:]' | tr -d '\r' | xargs)
    
-    # Retrieve intendedEditIndex and clean it up
-    intendedEditIndex=$(awk -F',' -v searchTerm="$searchTerm" '$1 == searchTerm {print $9}' ./../Common_amplicon_list.csv | tr -d '\r' | xargs)
-    permissibleEditIndex=$(awk -F',' -v searchTerm="$searchTerm" '$1 == searchTerm {print $8}' ./../Common_amplicon_list.csv | tr -d '\r' | xargs)
+    intendedEditIndex=$(awk -F',' -v searchTerm="$searchTerm" 'toupper($1) == searchTerm {print $9}' ./../Common_amplicon_list.csv | tr -d '\r' | xargs)
+    permissibleEditIndex=$(awk -F',' -v searchTerm="$searchTerm" 'toupper($1) == searchTerm {print $8}' ./../Common_amplicon_list.csv | tr -d '\r' | xargs)
     
     permissibleEditArray=($permissibleEditIndex)
 
@@ -99,7 +102,7 @@ reverse_complement() {
 }
 
 
-# Editing quantification loop
+# Main loop: editing quantification loop
 for DIR in */; do
 
     echo "--------------"
@@ -146,15 +149,20 @@ for DIR in */; do
     # Print the final array of modified sequences
     echo "Final search terms with permissible edits: ${permissibleEditStrings[@]}"
 
-    #go into the CRISPResso folder and pull out the alleles_freq table and turn it into a csv
+    # Navigate to the CRISPResso folder and generate the CSV file from the table
     cd CRISPR*
     readBasedAlignmentTxt=$(ls Alleles_frequency_table_around_sgRNA_*.txt 2>/dev/null)
     readBasedAlignmentTable="Alleles_frequency_table_around_sgRNA.csv"
     sed 's/\t/,/g' "$readBasedAlignmentTxt" > "$readBasedAlignmentTable"
     lenientCorrection="corrected_lenient.csv"
 
-    header=$(head -n 1 "$readBasedAlignmentTable")
-    echo "$header" > "$lenientCorrection"
+    # Extract total reads and reads aligned from CRISPResso_mapping_statistics.txt
+    totalReads=$(awk 'NR==2 {print $1}' ./CRISPResso_mapping_statistics.txt)
+    readsAligned=$(awk 'NR==2 {print $3}' ./CRISPResso_mapping_statistics.txt)
+
+    # Print total reads and reads aligned for visibility
+    echo "Total Reads: $totalReads"
+    echo "Aligned Reads: $readsAligned"
 
     # Track if any matching rows are found
     foundMatch=false
@@ -185,7 +193,7 @@ for DIR in */; do
     cd ..
 
     # Combine searchTerm with extracted values and write to CSV
-    final="$directoryName,$lenientCorrectionSum"
+    final="$directoryName,$lenientCorrectionSum,$totalReads,$readsAligned"
     echo "$final" >> ./../Correction_Read_Based.csv
 
     # Move back out of the directory to the main directory

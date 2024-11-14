@@ -1,70 +1,65 @@
-#!/bin/bash
+# Function to retrieve guideSeqVar, ampSeqVar, and guideOrientation
+get_variables() {
+    local searchTerm=$1
+    guideSeqVar=$(awk -F',' -v searchTerm="$searchTerm" 'toupper($1) == searchTerm {print $2}' ./../Common_amplicon_list.csv | tr '[:lower:]' '[:upper:]' | tr -d '\r' | tr -d '-' | xargs | cut -c1-20)
+    ampSeqVar=$(awk -F',' -v searchTerm="$searchTerm" 'toupper($1) == searchTerm {print $5}' ./../Common_amplicon_list.csv | tr '[:lower:]' '[:upper:]' | tr -d '\r' | xargs)
+    guideOrientation=$(awk -F',' -v searchTerm="$searchTerm" 'toupper($1) == searchTerm {print $4}' ./../Common_amplicon_list.csv | tr '[:lower:]' '[:upper:]' | tr -d '\r' | xargs)
 
+    echo "Guide Sequence Variable: $guideSeqVar"
+    echo "Amplicon Sequence Variable: $ampSeqVar"
+    echo "Guide Orientation: $guideOrientation"
+}
 
-# first prompt the user for delimiter and position
-echo "Enter the delimiter for extracting the search term:"
-read -r delimiter
-echo "Enter the position number for the search term:"
-read -r position
+# Function to run CRISPResso
+run_crispresso() {
+    local ampSeq=$1
+    local guideSeq=$2
+    local fastqFiles=(*.fastq*)
 
+    if [[ ${#fastqFiles[@]} -eq 2 ]]; then
+        CRISPResso \
+        --fastq_r1 *R1_001.fastq* \
+        --fastq_r2 *R2_001.fastq* \
+        --amplicon_seq "$ampSeq" \
+        --guide_seq "$guideSeq" \
+        --quantification_window_size 10 \
+        --quantification_window_center -10 \
+        --base_editor_output
+    else
+        CRISPResso \
+        --fastq_r1 *R1_001.fastq* \
+        --amplicon_seq "$ampSeq" \
+        --guide_seq "$guideSeq" \
+        --quantification_window_size 10 \
+        --quantification_window_center -10 \
+        --base_editor_output
+    fi
+}
 
-
-
-# Next run the CRISPResso loop
+# Main Loop
 for DIR in */; do
 
     echo "----------"
 
-    #move into the directory
+    # Move into the directory
     cd "$DIR";
 
-    #get the directory name
+    # Get the directory name
     directoryName=$(basename "$DIR")
 
     # Turn the name into a search term for searching the spreadsheet, converting to uppercase
     searchTerm=$(echo "$directoryName" | awk -F'[-_]' '{print $2}' | tr '[:lower:]' '[:upper:]')
 
-
-    #Print the search term so we can have some visibility in the console
-    #TO FIX: if the search term is in a different case then things break
+    # Print the search term for visibility in the console
     echo "Search Term: $searchTerm"
-    
 
-    # Grab relevant variables (making the search case-insensitive by converting to uppercase)
-    guideSeqVar=$(awk -F',' -v searchTerm="$searchTerm" 'toupper($1) == searchTerm {print $2}' ./../Common_amplicon_list.csv | tr '[:lower:]' '[:upper:]' | tr -d '\r' | tr -d '-' | xargs | cut -c1-20)
-    ampSeqVar=$(awk -F',' -v searchTerm="$searchTerm" 'toupper($1) == searchTerm {print $5}' ./../Common_amplicon_list.csv | tr '[:lower:]' '[:upper:]' | tr -d '\r' | xargs)
-    guideOrientation=$(awk -F',' -v searchTerm="$searchTerm" 'toupper($1) == searchTerm {print $4}' ./../Common_amplicon_list.csv | tr '[:lower:]' '[:upper:]' | tr -d '\r' | xargs)
+    # Get guideSeqVar, ampSeqVar, and guideOrientation
+    get_variables "$searchTerm"
 
+    # Run CRISPResso with the retrieved variables
+    run_crispresso "$ampSeqVar" "$guideSeqVar"
 
-    #Print these variables so we have visibility in the console
-    echo "$guideSeqVar"
-    echo "$ampSeqVar"
-    echo "$directoryName"
-    echo "$guideOrientation"
-# check if the directory contains two fastq files
-    fastqFiles=(*.fastq*)
-    if [[ ${#fastqFiles[@]} -eq 2 ]]; then
-        # run CRISPResso with both R1 and R2
-        CRISPResso \
-        --fastq_r1 *R1_001.fastq* \
-        --fastq_r2 *R2_001.fastq* \
-        --amplicon_seq "$ampSeqVar" \
-        --guide_seq "$guideSeqVar" \
-        --quantification_window_size 10 \
-        --quantification_window_center -10 \
-        --base_editor_output;
-    else
-        # run CRISPResso with only R1
-        CRISPResso \
-        --fastq_r1 *R1_001.fastq* \
-        --amplicon_seq "$ampSeqVar" \
-        --guide_seq "$guideSeqVar" \
-        --quantification_window_size 10 \
-        --quantification_window_center -10 \
-        --base_editor_output;
-    fi
-    #move back out of the directory to the main directory
+    # Move back out of the directory to the main directory
     cd ..;
 
 done
-
