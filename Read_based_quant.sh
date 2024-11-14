@@ -29,7 +29,6 @@ extract_guide_info() {
     echo "Intended Edit Index (after conversion): $intendedEditIndex"
 }
 
-
 # Function to check if the character at intendedEditIndex in guideSeq is "A"
 check_intended_edit() {
 
@@ -164,6 +163,7 @@ for DIR in */; do
     echo "Total Reads: $totalReads"
     echo "Aligned Reads: $readsAligned"
 
+
     # Track if any matching rows are found
     foundMatch=false
 
@@ -200,3 +200,6 @@ for DIR in */; do
     cd ..;
 
 done
+
+#add a header to our table
+echo -e "directoryName,lenientCorrectionPercentage,totalReads,readsAligned" | cat - Correction_Read_Based.csv > temp && mv temp Correction_Read_Based.csv
