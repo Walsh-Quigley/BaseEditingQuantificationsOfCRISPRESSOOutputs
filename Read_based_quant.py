@@ -107,12 +107,9 @@ def generateSearchSequences(guideSequence, guideOrientation, correctionLocationI
 
     toleratedSequences = generate_toleratedSequences(correctedSequence, permissibleEditsIndicies, replacement_letter)
 
-    for seq in toleratedSequences:
-        print(seq)
-
     toleratedSequences.append(correctedSequence)
 
-    return toleratedSequences
+    return toleratedSequences, correctedSequence
 
 def generate_toleratedSequences(sequence, indices, replacement_letter):
     toleratedSequences = []
@@ -143,43 +140,6 @@ def CRISPRessoDirectoryHelperFunction():
     os.chdir(target_dir)
     return True
 
-def allelesTableFilter(arrayOfStrings):
-    lenientCorrectionSum = -1
-    output_file = "AQLenientCorrection.csv"
-    CRISPRessoDirectoryHelperFunction()
-
-    input_files = glob.glob("Alleles_frequency_table*.txt")
-
-    if not input_files:
-        print("No file starting with 'Alleles_frequency_table' found.")
-    else:
-        input_file = input_files[0]  # Take the first matching file
-        print(f"Found input file: {input_file}")
-    
-    print(f"the array of strings {arrayOfStrings}")
-
-    with open(input_file, 'r') as infile, open(output_file, 'w', newline='') as outfile:
-        reader = csv.reader(infile, delimiter='\t')  # Tab-delimited reader
-        writer = csv.writer(outfile)  # Default is comma-delimited for CSV
-
-        #move the ehader to the output file
-        header = next(reader)
-        writer.writerow(header)
-
-        # Process each row
-        for row in reader:
-            row_first_column = row[0].strip().upper()
-            if any(s.strip().upper() in row_first_column for s in arrayOfStrings):  # Check if any string in the array matches
-                writer.writerow(row)  # Write matching row to the output file
-
-    lenientCorrectionSum = sum_last_column(output_file)
-
-    print(f"line 176 {lenientCorrectionSum}")
-
-    os.chdir("..")
-
-    return lenientCorrectionSum
-
 def sum_last_column(output_file):
     total = 0
     with open(output_file, 'r') as outfile:
@@ -193,19 +153,8 @@ def sum_last_column(output_file):
                 # Handle case where the last column is not numeric
                 print(f"Skipping row with non-numeric value in the last column: {row}")
                 continue
-    print(f"Lenient correction percentage (sum of last column excluding header): {total}")
 
     return total
-
-def generateQuantificationOutput(directory, lenient):
-        directoryTruncated = directory.split("_L001")[0]
-        analysis_result_file = "../AQ_Read_Based_Correction.csv"
-
-        print(f"Directory Truncated: {directoryTruncated}")
-        print(f"lenient Correction sum for this directory: {lenientCorrectionSum}")
-        with open(analysis_result_file, 'a', newline='') as result_file:
-            writer = csv.writer(result_file)
-            writer.writerow([directoryTruncated, lenient])
 
 def append_header_and_timestamp(csv_file):
     # Check if the file exists
@@ -216,13 +165,102 @@ def append_header_and_timestamp(csv_file):
 
         # Add header if the file doesn't exist
         if not file_exists:
-            writer.writerow(['Directory', 'read based lenient correction percentage'])  # Write the header
+            writer.writerow(['Directory',
+                             'Read-based Lenient Correction Percentage', 
+                             'Read-based Strict Correction', 
+                             'Reads Aligned', 
+                             'Reads Total', 
+                             'Guide Sequence (reverse complement if guide is in reverse orientation from amplicon)',
+                             'Guide Sequence relative to amplicon',
+                             'Index of Intended Edit (+1 for position)',
+                             'Index of Permissible Bystanders (+1 for position)',
+                             'Strings used to search the Alleles_frequency_table in the CRISPResso output'])  # Write the header
 
         # Get the current date and time
         current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         
         # Append the last run line with timestamp
         writer.writerow([f"the below analysis was run @ {current_time}"])
+
+def allelesTableFilter(arrayOfStrings, output_file):
+    if type(arrayOfStrings) == 'str':
+        print(f"Incorrect Data Structure passed: {type(arrayOfStrings)}")
+
+    correctionSum = -1
+    CRISPRessoDirectoryHelperFunction()
+
+    input_files = glob.glob("Alleles_frequency_table*.txt")
+
+    if not input_files:
+        print("No file starting with 'Alleles_frequency_table' found.")
+    else:
+        input_file = input_files[0]  # Take the first matching file
+        print(f"Found alleles table input file: {input_file}")
+
+    with open(input_file, 'r') as infile, open(output_file, 'w', newline='') as outfile:
+        reader = csv.reader(infile, delimiter='\t')  # Tab-delimited reader
+        writer = csv.writer(outfile)  # Default is comma-delimited for CSV
+
+        #move the ehader to the output file
+        header = next(reader)
+        writer.writerow(header)
+
+        # Process each row
+        for row in reader:
+            row_first_column = row[0].strip().upper()
+            # print(f"{row_first_column}")
+            if any(s.strip().upper() in row_first_column for s in arrayOfStrings):  # Check if any string in the array matches
+                writer.writerow(row)  # Write matching row to the output file
+
+    correctionSum = sum_last_column(output_file)
+
+    print(f"New file generated: {output_file}")
+
+    os.chdir("..")
+
+    return correctionSum
+
+def extractReadCounts():
+    readsAligned = -1
+    readsTotal = -1
+
+    CRISPRessoDirectoryHelperFunction()
+
+    CRISPRessoMappingStatsFile = "CRISPResso_mapping_statistics.txt"
+    
+    with open(CRISPRessoMappingStatsFile, "r") as file:
+        header = file.readline()
+        data_line = file.readline().strip()
+        col = data_line.split("\t")
+        readsAligned = int(col[2])
+        readsTotal = int(col[0])
+
+    print(f"The number of reads that align is: {readsAligned}")
+    print(f"The total number of reads: {readsTotal}")
+
+    os.chdir("..")
+
+    return readsAligned, readsTotal
+
+def generateQuantificationOutput(directory, 
+                                 lenient, 
+                                 strict, 
+                                 readsAligned, 
+                                 readsTotal, 
+                                 guideSequence,
+                                 guideOrientation,
+                                 correctionIndex,
+                                 permissibleEdits,
+                                 toleratedSequences):
+        
+        directoryTruncated = directory.split("_L001")[0]
+        analysis_result_file = "../AQ_Read_Based_Correction.csv"
+
+        print(f"Lenient correction percentage for {directoryTruncated}: {lenient}")
+        with open(analysis_result_file, 'a', newline='') as result_file:
+            writer = csv.writer(result_file)
+            writer.writerow([directoryTruncated, lenient, strict, readsAligned, readsTotal, guideSequence, guideOrientation, correctionIndex, permissibleEdits, toleratedSequences])
+
 
 append_header_and_timestamp("AQ_Read_Based_Correction.csv")
 
@@ -249,13 +287,24 @@ for directory in os.listdir():
         guideSequence, guideOrientation, correctionLocationIndex, permissibleEditsIndicies = gimmieDat(searchTerm)
 
         #generating the sequences that we will filter for
-        toleratedSequences = generateSearchSequences(guideSequence, guideOrientation, correctionLocationIndex, permissibleEditsIndicies)
+        toleratedSequences, correctedSequence = generateSearchSequences(guideSequence, guideOrientation, correctionLocationIndex, permissibleEditsIndicies)
 
         #search the alleles freq table for our tolerated sequences
-        lenientCorrectionSum = allelesTableFilter(toleratedSequences)
+        lenientCorrectionFile = "../AQLenientCorrection.csv"
+        lenientCorrectionSum = allelesTableFilter(toleratedSequences, lenientCorrectionFile)
+        print(f"the lenient correction percentage is: {lenientCorrectionSum}")
+
+        #search alleles freq table for the strict edit
+        correctedSequenceArray = [correctedSequence]
+        strictCorrectionFile = "../AQStrictCorrection.csv"
+        strictCorrectionSum = allelesTableFilter(correctedSequenceArray, strictCorrectionFile)
+        print(f"the strict correction percentage is: {strictCorrectionSum}")
+
+        #grabbing the read counts
+        readsAligned, readsTotal = extractReadCounts()
 
         #generate the table containing the quantification output
-        generateQuantificationOutput(directory, lenientCorrectionSum)
+        generateQuantificationOutput(directory, lenientCorrectionSum, strictCorrectionSum, readsAligned, readsTotal, guideSequence, guideOrientation, correctionLocationIndex, permissibleEditsIndicies, toleratedSequences)
 
         os.chdir("..")
 
