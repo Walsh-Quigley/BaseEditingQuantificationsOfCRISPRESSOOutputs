@@ -1,6 +1,11 @@
+#location of .py file: /Users/aidanq/Desktop/Bash_Scripts/BaseEditingQuantificationsOfCRISPRESSOOutputs/CRISPResso_Loop.py
+
+
 import os
 import subprocess
 import glob
+
+
 
 # the function to retrieve the GuideSequence AmpliconSequence and GuideOrientation
 def retrieveCRISPRessoInputs(search_term):
