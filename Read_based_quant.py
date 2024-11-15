@@ -166,8 +166,9 @@ def append_header_and_timestamp(csv_file):
         # Add header if the file doesn't exist
         if not file_exists:
             writer.writerow(['Directory',
-                             'Read-based Lenient Correction Percentage', 
+                             'Read-based Lenient Correction Percentage (with tolerated bystanders)', 
                              'Read-based Strict Correction', 
+                             'Independent Nucleotide Based Editing Quantification Percentage (taken from Quantification_window_nucleotide_percentage_table)',
                              'Reads Aligned', 
                              'Reads Total', 
                              'Guide Sequence (reverse complement if guide is in reverse orientation from amplicon)',
@@ -244,7 +245,8 @@ def extractReadCounts():
 
 def generateQuantificationOutput(directory, 
                                  lenient, 
-                                 strict, 
+                                 strict,
+                                 independentQuant, 
                                  readsAligned, 
                                  readsTotal, 
                                  guideSequence,
@@ -259,8 +261,32 @@ def generateQuantificationOutput(directory,
         print(f"Lenient correction percentage for {directoryTruncated}: {lenient}")
         with open(analysis_result_file, 'a', newline='') as result_file:
             writer = csv.writer(result_file)
-            writer.writerow([directoryTruncated, lenient, strict, readsAligned, readsTotal, guideSequence, guideOrientation, correctionIndex, permissibleEdits, toleratedSequences])
+            writer.writerow([directoryTruncated, lenient, strict, independentQuant, readsAligned, readsTotal, guideSequence, guideOrientation, correctionIndex, permissibleEdits, toleratedSequences])
 
+def independentQuant(correctionLocationIndex, guideOrientation):
+    independentQuantSum = -1
+
+    CRISPRessoDirectoryHelperFunction()
+    nucleotidePercentageFile = "Quantification_window_nucleotide_percentage_table.txt"
+    print(correctionLocationIndex)
+    print(guideOrientation)
+
+    if guideOrientation == "R":
+        row_index = 2
+    else:
+        row_index = 3
+
+    col_index = int(correctionLocationIndex) + 1
+
+    with open(nucleotidePercentageFile, "r") as file:
+        lines = file.readlines()
+
+        target_row = lines[row_index].strip()
+        col = target_row.split("\t")
+        independentQuantSum = col[col_index]
+
+    os.chdir("..")
+    return independentQuantSum
 
 append_header_and_timestamp("AQ_Read_Based_Correction.csv")
 
@@ -303,8 +329,14 @@ for directory in os.listdir():
         #grabbing the read counts
         readsAligned, readsTotal = extractReadCounts()
 
+        #grabbing independent editing quantification data from quantification_window_nucleotide_percentage_table.txt
+        independentQuantSum = independentQuant(correctionLocationIndex, guideOrientation)
+
+        print(f"the independent quant sum is: {independentQuantSum}")
+
+
         #generate the table containing the quantification output
-        generateQuantificationOutput(directory, lenientCorrectionSum, strictCorrectionSum, readsAligned, readsTotal, guideSequence, guideOrientation, correctionLocationIndex, permissibleEditsIndicies, toleratedSequences)
+        generateQuantificationOutput(directory, lenientCorrectionSum, strictCorrectionSum, independentQuantSum, readsAligned, readsTotal, guideSequence, guideOrientation, correctionLocationIndex, permissibleEditsIndicies, toleratedSequences)
 
         os.chdir("..")
 
