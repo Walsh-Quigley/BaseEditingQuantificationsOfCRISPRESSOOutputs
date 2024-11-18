@@ -202,7 +202,7 @@ def allelesTableFilter(arrayOfStrings, output_file):
         reader = csv.reader(infile, delimiter='\t')  # Tab-delimited reader
         writer = csv.writer(outfile)  # Default is comma-delimited for CSV
 
-        #move the ehader to the output file
+        #move the header to the output file
         header = next(reader)
         writer.writerow(header)
 
