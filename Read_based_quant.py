@@ -6,8 +6,12 @@ from itertools import combinations
 import csv
 import glob
 from datetime import datetime
+from pathlib import Path
 
-#rewriting the extractGuideInfo function
+# Global variables
+analysis_result_file = "../AQ_Read_Based_Correction.csv"    
+
+#function to get all our variables from the common amplicons list
 def gimmieDat(searchTerm):
     guideSequence = ""
     guideOrientation = ""
@@ -15,6 +19,7 @@ def gimmieDat(searchTerm):
     permissibleEditsIndicies = []
 
     with open('./../Common_amplicon_list.csv', 'r') as file:
+        match_found = False
         for line in file:
             #split the line by commas and clean up each column
             columns = line.strip().split(',')
@@ -26,7 +31,12 @@ def gimmieDat(searchTerm):
                 #this is called list Comprehension combining the iteration condition and 
                 #transformatino onto one line and also faster than a for loop
                 permissibleEditsIndicies = [int(x) - 1 for x in columns[7].split()]
+                match_found = True
                 break
+    
+        if not match_found:
+            raise ValueError(f"Search term '{searchTerm}' not found in file.")
+
 
     # Print the retrieved variables
     print(f"Guide Sequence Variable: {guideSequence}")
@@ -194,6 +204,9 @@ def allelesTableFilter(arrayOfStrings, output_file):
 
     if not input_files:
         print("No file starting with 'Alleles_frequency_table' found.")
+        correctionSum = "No file starting with 'Alleles_frequency_table' found."
+        os.chdir("..")
+        return correctionSum 
     else:
         input_file = input_files[0]  # Take the first matching file
         print(f"Found alleles table input file: {input_file}")
@@ -228,13 +241,23 @@ def extractReadCounts():
     CRISPRessoDirectoryHelperFunction()
 
     CRISPRessoMappingStatsFile = "CRISPResso_mapping_statistics.txt"
-    
-    with open(CRISPRessoMappingStatsFile, "r") as file:
-        header = file.readline()
-        data_line = file.readline().strip()
-        col = data_line.split("\t")
-        readsAligned = int(col[2])
-        readsTotal = int(col[0])
+
+
+    file_path = Path(CRISPRessoMappingStatsFile)
+
+    if file_path.is_file():
+        with file_path.open("r") as file:
+            header = file.readline()
+            data_line = file.readline().strip()
+            col = data_line.split("\t")
+            readsAligned = int(col[2])
+            readsTotal = int(col[0])
+    else:
+        print(f"Error: File '{CRISPRessoMappingStatsFile}' does not exist.")
+        os.chdir("..")
+        readsAligned = "The 'CRISPResso_mapping_statistic.txt' file does not exist"
+        readsTotal = "The 'CRISPResso_mapping_statistic.txt' file does not exist"
+        return readsAligned, readsTotal
 
     print(f"The number of reads that align is: {readsAligned}")
     print(f"The total number of reads: {readsTotal}")
@@ -278,15 +301,61 @@ def independentQuant(correctionLocationIndex, guideOrientation):
 
     col_index = int(correctionLocationIndex) + 1
 
-    with open(nucleotidePercentageFile, "r") as file:
-        lines = file.readlines()
+    file_path = Path(nucleotidePercentageFile)
 
-        target_row = lines[row_index].strip()
-        col = target_row.split("\t")
-        independentQuantSum = col[col_index]
+    if file_path.is_file():
+        with open(nucleotidePercentageFile, "r") as file:
+            lines = file.readlines()
+
+            target_row = lines[row_index].strip()
+            col = target_row.split("\t")
+            independentQuantSum = col[col_index]
+    else:
+        print(f"Error: File '{nucleotidePercentageFile}' does not exist")
+        os.chdir("..")
+        independentQuantSum = "Error: the file 'Quantification_window_nucleotide_percentage_table.txt' does not exist"
 
     os.chdir("..")
     return independentQuantSum
+
+def errorPrintStatement(directory, directoryErrorMessage):
+
+     
+    with open(analysis_result_file, 'a', newline='') as result_file:
+            writer = csv.writer(result_file)
+            writer.writerow([directory, directoryErrorMessage])
+
+def directoryDelimiter():
+
+    # List directories in the current directory
+    current_directory = os.getcwd()  # Get the current working cddirectory
+    directories = [d for d in os.listdir(current_directory) if os.path.isdir(os.path.join(current_directory, d))]
+    
+    # Display the first 3 directories
+    print("First 3 directories in the current directory:")
+    for i, directory in enumerate(directories[:3], start=1):
+        print(f"{i}. {directory}")
+
+    while True:
+        #Prompt user for a delimiter
+        delimiter = input("Enter the delimiter used in the directories for you data (i.e. did you separate the words/names in the sample sheet by a '-'): ").strip()
+        if delimiter.lower() == "\\t":
+            delimiter = "\t" #convert the '\t' string to an actual tab character
+
+        if not delimiter:
+            print("Delimiter cannot be empty. Please try again")
+            continue
+
+        column_input = input("Enter the position in the file name (starting from 1) where the search term is located:").strip()
+
+        if not column_input.isdigit() or int(column_input) < 1:
+            print("Invalid column index. Please enter a positive integer.")
+            continue
+
+        column_index = int(column_input) - 1
+        return delimiter, column_index
+
+delimiter, column_index = directoryDelimiter()
 
 append_header_and_timestamp("AQ_Read_Based_Correction.csv")
 
@@ -303,15 +372,26 @@ for directory in os.listdir():
         #subsequent operations will be relative to this subdirectory
         os.chdir(directory)
 
+        parts = re.split(delimiter, directory)
+        if len(parts) < 3:
+            directoryErrorMessage = f"Unexpected directory name format: {directory}"
+            print(directoryErrorMessage) #print the error
+            errorPrintStatement(directory, directoryErrorMessage) #log the error
+            continue #move on to the next directory
+
+
         #getting the search term from the directory name using the dash delimiter
         directoryName = os.path.basename(directory)
-        searchTerm = re.split('[-_]', directory)[1]. upper()
+        searchTerm = parts[column_index].upper()
         print(f"The Search Term is: {searchTerm}")
 
         #passing that search term to the function that will extract all the info from 
         #common amplicons list
-        guideSequence, guideOrientation, correctionLocationIndex, permissibleEditsIndicies = gimmieDat(searchTerm)
-
+        try:
+            guideSequence, guideOrientation, correctionLocationIndex, permissibleEditsIndicies = gimmieDat(searchTerm)
+        except Exception as e:
+            print(f"Error in common amplicons list: {searchTerm}: {e}")
+            continue
         #generating the sequences that we will filter for
         toleratedSequences, correctedSequence = generateSearchSequences(guideSequence, guideOrientation, correctionLocationIndex, permissibleEditsIndicies)
 
@@ -334,6 +414,7 @@ for directory in os.listdir():
 
         print(f"the independent quant sum is: {independentQuantSum}")
 
+        print("Current Working Directory:", os.getcwd())
 
         #generate the table containing the quantification output
         generateQuantificationOutput(directory, lenientCorrectionSum, strictCorrectionSum, independentQuantSum, readsAligned, readsTotal, guideSequence, guideOrientation, correctionLocationIndex, permissibleEditsIndicies, toleratedSequences)
