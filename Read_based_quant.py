@@ -33,7 +33,7 @@ def gimmieDat(searchTerm):
                 permissibleEditsIndicies = [int(x) - 1 for x in columns[7].split()]
                 match_found = True
                 break
-    
+
         if not match_found:
             raise ValueError(f"Search term '{searchTerm}' not found in file.")
 
@@ -193,7 +193,7 @@ def append_header_and_timestamp(csv_file):
         # Append the last run line with timestamp
         writer.writerow([f"the below analysis was run @ {current_time}"])
 
-def allelesTableFilter(arrayOfStrings, output_file):
+def allelesTableFilter(directory, arrayOfStrings, output_file):
     if type(arrayOfStrings) == 'str':
         print(f"Incorrect Data Structure passed: {type(arrayOfStrings)}")
 
@@ -204,9 +204,11 @@ def allelesTableFilter(arrayOfStrings, output_file):
 
     if not input_files:
         print("No file starting with 'Alleles_frequency_table' found.")
-        correctionSum = "No file starting with 'Alleles_frequency_table' found."
+        correctionSumError = "No file starting with 'Alleles_frequency_table' found."
         os.chdir("..")
-        return correctionSum 
+        errorPrintStatement(directory, correctionSumError)
+        return correctionSum
+    
     else:
         input_file = input_files[0]  # Take the first matching file
         print(f"Found alleles table input file: {input_file}")
@@ -222,7 +224,6 @@ def allelesTableFilter(arrayOfStrings, output_file):
         # Process each row
         for row in reader:
             row_first_column = row[0].strip().upper()
-            # print(f"{row_first_column}")
             if any(s.strip().upper() in row_first_column for s in arrayOfStrings):  # Check if any string in the array matches
                 writer.writerow(row)  # Write matching row to the output file
 
@@ -291,8 +292,6 @@ def independentQuant(correctionLocationIndex, guideOrientation):
 
     CRISPRessoDirectoryHelperFunction()
     nucleotidePercentageFile = "Quantification_window_nucleotide_percentage_table.txt"
-    print(correctionLocationIndex)
-    print(guideOrientation)
 
     if guideOrientation == "R":
         row_index = 2
@@ -314,12 +313,15 @@ def independentQuant(correctionLocationIndex, guideOrientation):
         print(f"Error: File '{nucleotidePercentageFile}' does not exist")
         os.chdir("..")
         independentQuantSum = "Error: the file 'Quantification_window_nucleotide_percentage_table.txt' does not exist"
+        print(independentQuantSum)
+        errorPrintStatement()
+    
+    independentQuantSum = float(independentQuantSum) * 100
 
     os.chdir("..")
     return independentQuantSum
 
 def errorPrintStatement(directory, directoryErrorMessage):
-
      
     with open(analysis_result_file, 'a', newline='') as result_file:
             writer = csv.writer(result_file)
@@ -391,19 +393,24 @@ for directory in os.listdir():
             guideSequence, guideOrientation, correctionLocationIndex, permissibleEditsIndicies = gimmieDat(searchTerm)
         except Exception as e:
             print(f"Error in common amplicons list: {searchTerm}: {e}")
+            errorPrintStatement(directory, e)
+            os.chdir("..")
             continue
         #generating the sequences that we will filter for
         toleratedSequences, correctedSequence = generateSearchSequences(guideSequence, guideOrientation, correctionLocationIndex, permissibleEditsIndicies)
 
         #search the alleles freq table for our tolerated sequences
         lenientCorrectionFile = "../AQLenientCorrection.csv"
-        lenientCorrectionSum = allelesTableFilter(toleratedSequences, lenientCorrectionFile)
+        lenientCorrectionSum = allelesTableFilter(directory, toleratedSequences, lenientCorrectionFile)
+        if lenientCorrectionSum == -1:
+            os.chdir("..")
+            continue
         print(f"the lenient correction percentage is: {lenientCorrectionSum}")
 
         #search alleles freq table for the strict edit
         correctedSequenceArray = [correctedSequence]
         strictCorrectionFile = "../AQStrictCorrection.csv"
-        strictCorrectionSum = allelesTableFilter(correctedSequenceArray, strictCorrectionFile)
+        strictCorrectionSum = allelesTableFilter(directory, correctedSequenceArray, strictCorrectionFile)
         print(f"the strict correction percentage is: {strictCorrectionSum}")
 
         #grabbing the read counts
@@ -413,6 +420,7 @@ for directory in os.listdir():
         independentQuantSum = independentQuant(correctionLocationIndex, guideOrientation)
 
         print(f"the independent quant sum is: {independentQuantSum}")
+
 
         print("Current Working Directory:", os.getcwd())
 
