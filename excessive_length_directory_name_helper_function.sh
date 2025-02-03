@@ -1,4 +1,5 @@
 #!/bin/bash
+#file location: /Users/aidanq/Desktop/Bash_Scripts/excessive_length_directory_name_helper_function.sh
 
 # Loop through directories starting with ds.
 for DIR in ds.*; do

@@ -15,6 +15,7 @@ def retrieveCRISPRessoInputs(search_term):
     guideOrientation = ""
 
     with open('./../Common_amplicon_list.csv', 'r') as file:
+        match_found = False
         for line in file:
             #Split the line by commas and clean up each column
             columns = line.strip().split(',')
@@ -22,7 +23,11 @@ def retrieveCRISPRessoInputs(search_term):
                 guideSequence = columns[1].upper().replace("\r", "").replace("-", "")[:20]
                 ampliconSequence = columns[4].upper().replace("\r", "").strip()
                 guideOrientation = columns[3].upper().replace("\r", "").strip()
+                match_found = True
                 break
+        
+        if not match_found:
+            raise ValueError(f"Search term '{searchTerm}' not found in file.")
 
     # Print the retrieved variables
     print(f"Guide Sequence Variable: {guideSequence}")
@@ -54,8 +59,6 @@ def run_CRISPResso(ampliconSequence, guideSequence, fastq_files):
             '--guide_seq', guideSequence,
             '--quantification_window_size', '10',
             '--quantification_window_center', '-10',
-            '--quantification_window_size', '10',
-            '--quantification_window_center', '-10',
             '--base_editor_output'
         ])
     else:
@@ -78,14 +81,18 @@ def directoryDelimiter():
         print(f"{i}. {directory}")
 
     while True:
-        #Prompt user for a delimiter
-        delimiter = input("Enter the delimiter used in the directories for you data (i.e. did you separate the words/names in the sample sheet by a '-'): ").strip()
-        if delimiter.lower() == "\\t":
-            delimiter = "\t" #convert the '\t' string to an actual tab character
-
-        if not delimiter:
-            print("Delimiter cannot be empty. Please try again")
+        # Prompt user for delimiters
+        delimiter_input = input(
+            "Enter the delimiter(s) used in the directories for your data (e.g., '-', '_'). "
+            "For multiple delimiters, enter them without spaces (e.g., '-_'): "
+        ).strip()
+        
+        if not delimiter_input:
+            print("Delimiter cannot be empty. Please try again.")
             continue
+
+        # Convert input into a regex pattern to match any of the provided delimiters
+        delimiter_pattern = f"[{re.escape(delimiter_input)}]"
 
         column_input = input("Enter the position in the file name (starting from 1) where the search term is located:").strip()
 
@@ -94,7 +101,7 @@ def directoryDelimiter():
             continue
 
         column_index = int(column_input) - 1
-        return delimiter, column_index
+        return delimiter_pattern, column_index
 
 delimiter, column_index = directoryDelimiter()
 

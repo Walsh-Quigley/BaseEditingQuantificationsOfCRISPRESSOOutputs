@@ -3,7 +3,8 @@
 
 # TO-DO list
 - include instructions on use (ironic)
-- prompt for delimiters
+- make the allele function optional
+- make the whole amplicon sequence input and then just take the 151
 - include sample common_amplicons_list.csv file
 
 # TO-DONE list

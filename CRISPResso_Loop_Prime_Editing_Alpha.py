@@ -40,8 +40,6 @@ def run_CRISPResso(ampliconSequence, guideSequence, fastq_files):
             '--fastq_r2', fastq_files[1],
             '--amplicon_seq', ampliconSequence,
             '--guide_seq', guideSequence,
-            '--exclude_bp_from_left', '0',
-            '--exclude_bp_from_right', '0',
             '--quantification_window_size', '10',
             '--quantification_window_center', '-10',
             '--base_editor_output'
@@ -52,8 +50,6 @@ def run_CRISPResso(ampliconSequence, guideSequence, fastq_files):
             '--fastq_r1', fastq_files[0],
             '--amplicon_seq', ampliconSequence,
             '--guide_seq', guideSequence,
-            '--quantification_window_size', '10',
-            '--quantification_window_center', '-10',
             '--quantification_window_size', '10',
             '--quantification_window_center', '-10',
             '--base_editor_output'
@@ -96,7 +92,7 @@ def directoryDelimiter():
         column_index = int(column_input) - 1
         return delimiter, column_index
 
-delimiter, column_index = directoryDelimiter()
+# delimiter, column_index = directoryDelimiter()
 
 #Main Loop
 for directory in os.listdir():
@@ -110,16 +106,17 @@ for directory in os.listdir():
         fastq_files = gather_fastqs()
         print(f"Our fastq file(s) are: {fastq_files}")
 
-        parts = re.split(delimiter, directory)
-        if len(parts) < 3:
-            directoryErrorMessage = f"Unexpected directory name format: {directory}"
-            print(directoryErrorMessage) #print the error
-            continue #move on to the next directory
+        # parts = re.split(delimiter, directory)
+        # if len(parts) < 3:
+        #     directoryErrorMessage = f"Unexpected directory name format: {directory}"
+        #     print(directoryErrorMessage) #print the error
+        #     continue #move on to the next directory
 
 
         #getting the search term from the directory name using the dash delimiter
-        directoryName = os.path.basename(directory)
-        searchTerm = parts[column_index].upper()
+        # directoryName = os.path.basename(directory)
+        # searchTerm = parts[column_index].upper()
+        searchTerm = "AQDB"
         print(f"The Search Term is: {searchTerm}")
 
 

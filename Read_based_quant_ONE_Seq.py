@@ -1,4 +1,4 @@
- #location of .py file: /Users/aidanq/Desktop/Bash_Scripts/BaseEditingQuantificationsOfCRISPRESSOOutputs/Read_based_quant.py
+#location of .py file: /Users/aidanq/Desktop/Bash_Scripts/BaseEditingQuantificationsOfCRISPRESSOOutputs/Read_based_quant.py
 
 import os
 import re
@@ -8,16 +8,14 @@ import glob
 from datetime import datetime
 from pathlib import Path
 import shutil
-import matplotlib.pyplot as plt
 
 # Global variables
 analysis_result_file = "../AQ_Read_Based_Correction.csv"    
 
+#function to get all our variables from the common amplicons list
 def gimmieDat(searchTerm):
     guideSequence = ""
     guideOrientation = ""
-    correctionLocationIndex = -1
-    permissibleEditsIndicies = []
 
     with open('./../Common_amplicon_list.csv', 'r') as file:
         match_found = False
@@ -27,11 +25,6 @@ def gimmieDat(searchTerm):
             if columns[0].upper() == searchTerm:
                 guideSequence = columns[1].upper().replace("\r", "").replace("-", "")[:20]
                 guideOrientation = columns[3].upper().replace("\r", "").strip()
-                correctionLocationPosition = columns[8]
-                correctionLocationIndex = int(correctionLocationPosition) - 1
-                #this is called list Comprehension combining the iteration condition and 
-                #transformatino onto one line and also faster than a for loop
-                permissibleEditsIndicies = [int(x) - 1 for x in columns[7].split()]
                 match_found = True
                 break
 
@@ -41,86 +34,23 @@ def gimmieDat(searchTerm):
 
     # Print the retrieved variables
     print(f"Guide Sequence Variable: {guideSequence}")
-    print(f"Intended Edit/Correction Position: {correctionLocationPosition}")
-    print(f"Intended Edit/Correction Index (Position -1): {correctionLocationIndex}")
     print(f"Guide Orientation: {guideOrientation}")
-    print(f"Permissible Edit Indicies (Position -1): {permissibleEditsIndicies}")
-
-    #checking to see if the correction index is in a logical place
-    if not (0 <= int(correctionLocationIndex) <= 19):
-        print("\033[4mERROR:\033[0m CorrectionLocationIndex is empty, not a valid integer, or not in the range 0 to 19. i.e. position 1 to 20")
-        return 1  # This assumes it's inside a function. Use sys.exit(1) if it's in the main script.
-
-    #check to see if the correction index is an "A"
-    if guideSequence[correctionLocationIndex] == 'A':
-        print(f"The base at the intended edit index, {correctionLocationIndex}, is an 'A' ")
-    else:
-        print(f"\033[4mERROR:\033[0m the base at intended edit index, {correctionLocationIndex}, is {guideSequence[correctionLocationIndex]}")
-
-    #check to see if the permissible edits are 'A's
-    for index in permissibleEditsIndicies:
-        if guideSequence[index] == 'A':
-            print(f"The base at index {index} is an 'A'.")
-        else:
-            print(f"The base at index {index} is {guideSequence[index]}, not an 'A'.")
 
     #checking to see if the guide is in the forward orientation and calling reverse complement function if not
     if guideOrientation == 'F':
         print("Guide is in the forward orientation")
     else:
         print("the guide is in the reverse orientation, generating reverse complement...")
-        guideSequence, correctionLocationIndex, permissibleEditsIndicies = reverseProcessing(guideSequence, correctionLocationIndex, permissibleEditsIndicies)
+        guideSequence = reverseComplement(guideSequence)
 
-    return guideSequence, guideOrientation, correctionLocationIndex, permissibleEditsIndicies
+    return guideSequence, guideOrientation
 
-def reverseProcessing(guideSequence, correctionLocationIndex, permissibleEditsIndicies):
-    RCGuide = reverseComplement(guideSequence)
-    print(f"reverse complement of guide sequence {RCGuide}")
 
-    RCcorrectionLocationIndex = abs(correctionLocationIndex - 19)
-    print(f"New correction location index: {RCcorrectionLocationIndex}")
-
-    if RCGuide[RCcorrectionLocationIndex] == 'T':
-        print(f"The base in the reverse complement guide at the intended edit index is a 'T' ")
-    else:
-        print(f"\033[4mERROR:\033[0m the base at intended edit index, {correctionLocationIndex}, is {guideSequence[correctionLocationIndex]}")
-
-    RCpermissibleEdits = [abs(int(index) - 19) for index in permissibleEditsIndicies]
-    print(f"the new reverse complement permissible edit locations are: {RCpermissibleEdits}")
-
-    return RCGuide, RCcorrectionLocationIndex, RCpermissibleEdits
 
 def reverseComplement(dna):
     complement = {'A': 'T', 'T': 'A', 'C': 'G', 'G': 'C'}
     # Replace each base with its complement and reverse the resulting sequence
     return ''.join(complement[base] for base in reversed(dna))
-
-def generateSearchSequences(guideSequence, guideOrientation, correctionLocationIndex, permissibleEditsIndicies):
-    toleratedSequences = []
-
-    if guideOrientation == "F":
-        # Replace the character at correctionLocationIndex with 'G'
-        correctedSequence = (guideSequence[:correctionLocationIndex] + 'G' + 
-                        guideSequence[correctionLocationIndex + 1:])
-    elif guideOrientation == "R":
-        # Replace the character at correctionLocationIndex with 'C'
-        correctedSequence = (guideSequence[:correctionLocationIndex] + 'C' + 
-                        guideSequence[correctionLocationIndex + 1:])
-    else:
-        print("Invalid guide orientation")
-    
-    print(f"the corrected guide sequence with intended edit: {correctedSequence}")
-
-    if guideOrientation == "F":
-        replacement_letter = "G"
-    elif guideOrientation == "R":
-        replacement_letter = "C"
-
-    toleratedSequences = generate_toleratedSequences(correctedSequence, permissibleEditsIndicies, replacement_letter)
-
-    toleratedSequences.append(correctedSequence)
-
-    return toleratedSequences, correctedSequence
 
 def generate_toleratedSequences(sequence, indices, replacement_letter):
     toleratedSequences = []
@@ -177,15 +107,12 @@ def append_header_and_timestamp(csv_file):
         # Add header if the file doesn't exist
         if not file_exists:
             writer.writerow(['Directory',
-                             'Read-based Lenient Correction Percentage (with tolerated bystanders)', 
-                             'Read-based Strict Correction', 
-                             'Independent Nucleotide Based Editing Quantification Percentage (taken from Quantification_window_nucleotide_percentage_table)',
+                             'Percent Edited (any "A")', 
                              'Reads Aligned', 
                              'Reads Total', 
-                             'Guide Sequence (reverse complement if guide is in reverse orientation from amplicon)',
+                             'Guide Sequence ("-" removed, truncated to 20bp)',
                              'Guide Sequence relative to amplicon',
-                             'Index of Intended Edit (+1 for position)',
-                             'Index of Permissible Bystanders (+1 for position)',
+                             'Index of "A"s ',
                              'Strings used to search the Alleles_frequency_table in the CRISPResso output'])  # Write the header
 
         # Get the current date and time
@@ -270,13 +197,10 @@ def extractReadCounts():
 
 def generateQuantificationOutput(directory, 
                                  lenient, 
-                                 strict,
-                                 independentQuant, 
                                  readsAligned, 
                                  readsTotal, 
                                  guideSequence,
                                  guideOrientation,
-                                 correctionIndex,
                                  permissibleEdits,
                                  toleratedSequences):
         
@@ -286,7 +210,7 @@ def generateQuantificationOutput(directory,
         print(f"Lenient correction percentage for {directoryTruncated}: {lenient}")
         with open(analysis_result_file, 'a', newline='') as result_file:
             writer = csv.writer(result_file)
-            writer.writerow([directoryTruncated, lenient, strict, independentQuant, readsAligned, readsTotal, guideSequence, guideOrientation, correctionIndex, permissibleEdits, toleratedSequences])
+            writer.writerow([directoryTruncated, lenient, readsAligned, readsTotal, guideSequence, guideOrientation, permissibleEdits, toleratedSequences])
 
 def independentQuant(correctionLocationIndex, guideOrientation):
     independentQuantSum = -1
@@ -334,14 +258,18 @@ def directoryDelimiter():
         print(f"{i}. {directory}")
 
     while True:
-        #Prompt user for a delimiter
-        delimiter = input("Enter the delimiter used in the directories for you data (i.e. did you separate the words/names in the sample sheet by a '-'): ").strip()
-        if delimiter.lower() == "\\t":
-            delimiter = "\t" #convert the '\t' string to an actual tab character
-
-        if not delimiter:
-            print("Delimiter cannot be empty. Please try again")
+        # Prompt user for delimiters
+        delimiter_input = input(
+            "Enter the delimiter(s) used in the directories for your data (e.g., '-', '_'). "
+            "For multiple delimiters, enter them without spaces (e.g., '-_'): "
+        ).strip()
+        
+        if not delimiter_input:
+            print("Delimiter cannot be empty. Please try again.")
             continue
+
+        # Convert input into a regex pattern to match any of the provided delimiters
+        delimiter_pattern = f"[{re.escape(delimiter_input)}]"
 
         column_input = input("Enter the position in the file name (starting from 1) where the search term is located:").strip()
 
@@ -350,7 +278,7 @@ def directoryDelimiter():
             continue
 
         column_index = int(column_input) - 1
-        return delimiter, column_index
+        return delimiter_pattern, column_index
 
 def errorPrintStatement(directory, directoryErrorMessage):
      
@@ -381,6 +309,16 @@ def errorPrintStatement(directory, directoryErrorMessage):
         os.chdir("..")
 
     print(os.getcwd())
+
+def identifyPermissibleEdits(guideSequence):
+
+        permissibleEditsIndices = [i for i, letter in enumerate(guideSequence) if letter == "A"]
+        return permissibleEditsIndices
+
+
+
+
+
 
 
 
@@ -420,14 +358,17 @@ for directory in os.listdir():
         #passing that search term to the function that will extract all the info from 
         #common amplicons list
         try:
-            guideSequence, guideOrientation, correctionLocationIndex, permissibleEditsIndicies = gimmieDat(searchTerm)
+            guideSequence, guideOrientation = gimmieDat(searchTerm)
         except Exception as e:
             print(f"Error in common amplicons list: {searchTerm}: {e}")
             errorPrintStatement(directory, e)
             os.chdir("..")
             continue
+
+        permissibleEditsIndicies = identifyPermissibleEdits(guideSequence)
+
         #generating the sequences that we will filter for
-        toleratedSequences, correctedSequence = generateSearchSequences(guideSequence, guideOrientation, correctionLocationIndex, permissibleEditsIndicies)
+        toleratedSequences = generate_toleratedSequences(guideSequence, permissibleEditsIndicies, "G")
 
         #search the alleles freq table for our tolerated sequences
         lenientCorrectionFile = "../AQLenientCorrection.csv"
@@ -438,24 +379,24 @@ for directory in os.listdir():
         print(f"the lenient correction percentage is: {lenientCorrectionSum}")
 
         #search alleles freq table for the strict edit
-        correctedSequenceArray = [correctedSequence]
-        strictCorrectionFile = "../AQStrictCorrection.csv"
-        strictCorrectionSum = allelesTableFilter(directory, correctedSequenceArray, strictCorrectionFile)
-        print(f"the strict correction percentage is: {strictCorrectionSum}")
+        # correctedSequenceArray = [correctedSequence]
+        # strictCorrectionFile = "../AQStrictCorrection.csv"
+        # strictCorrectionSum = allelesTableFilter(directory, correctedSequenceArray, strictCorrectionFile)
+        # print(f"the strict correction percentage is: {strictCorrectionSum}")
 
         #grabbing the read counts
         readsAligned, readsTotal = extractReadCounts()
 
-        #grabbing independent editing quantification data from quantification_window_nucleotide_percentage_table.txt
-        independentQuantSum = independentQuant(correctionLocationIndex, guideOrientation)
+        # #grabbing independent editing quantification data from quantification_window_nucleotide_percentage_table.txt
+        # independentQuantSum = independentQuant(correctionLocationIndex, guideOrientation)
 
-        print(f"the independent quant sum is: {independentQuantSum}")
+        # print(f"the independent quant sum is: {independentQuantSum}")
 
 
         print("Current Working Directory:", os.getcwd())
 
         #generate the table containing the quantification output
-        generateQuantificationOutput(directory, lenientCorrectionSum, strictCorrectionSum, independentQuantSum, readsAligned, readsTotal, guideSequence, guideOrientation, correctionLocationIndex, permissibleEditsIndicies, toleratedSequences)
+        generateQuantificationOutput(directory, lenientCorrectionSum, readsAligned, readsTotal, guideSequence, guideOrientation, permissibleEditsIndicies, toleratedSequences)
 
         os.chdir("..")
 
