@@ -78,14 +78,18 @@ def directoryDelimiter():
         print(f"{i}. {directory}")
 
     while True:
-        #Prompt user for a delimiter
-        delimiter = input("Enter the delimiter used in the directories for you data (i.e. did you separate the words/names in the sample sheet by a '-'): ").strip()
-        if delimiter.lower() == "\\t":
-            delimiter = "\t" #convert the '\t' string to an actual tab character
-
-        if not delimiter:
-            print("Delimiter cannot be empty. Please try again")
+        # Prompt user for delimiters
+        delimiter_input = input(
+            "Enter the delimiter(s) used in the directories for your data (e.g., '-', '_'). "
+            "For multiple delimiters, enter them without spaces (e.g., '-_'): "
+        ).strip()
+        
+        if not delimiter_input:
+            print("Delimiter cannot be empty. Please try again.")
             continue
+
+        # Convert input into a regex pattern to match any of the provided delimiters
+        delimiter_pattern = f"[{re.escape(delimiter_input)}]"
 
         column_input = input("Enter the position in the file name (starting from 1) where the search term is located:").strip()
 
@@ -94,7 +98,7 @@ def directoryDelimiter():
             continue
 
         column_index = int(column_input) - 1
-        return delimiter, column_index
+        return delimiter_pattern, column_index
 
 delimiter, column_index = directoryDelimiter()
 
