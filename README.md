@@ -151,7 +151,7 @@ Lenient correction percentage for FastQFileName: 0
 ```
 Data returned will be populated with usable information in place of temporary XXXXXXXX.
 
-##License##
+## License ##
 BEQ CRISPResso Pipeline is licensed under the BSD 3-clause license.
 
 Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
