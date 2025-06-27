@@ -1,3 +1,22 @@
+# A first-level heading
+## A second-level heading
+### A third-level heading
+**This is bold text**
+_This text is italicized_
+**This text is _extremely_ important**
+***All this text is important***
+This is an <ins>underlined</ins> text
+
+```
+code text written like this
+```
+
+
+
+
+
+
+
 # BaseEditingQuantificationsOfCRISPRESSOOutputs
 
 
