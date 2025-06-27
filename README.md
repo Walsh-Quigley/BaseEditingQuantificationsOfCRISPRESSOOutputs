@@ -100,7 +100,9 @@ if more than one fastq file is provided the function will return additional info
 BEQ CRISPResso Pipline can be used in two steps.
 
 First by placing the CRISPResso_Loop.py file in your fastq data directory and then entering 
-``` python3 CRISPResso_loop.py ```
+``` 
+python3 CRISPResso_loop.py 
+```
 while in that directory. User will be prompted with providing a deliminator for their fastQ file names such as "_":
 ```
 (base) root@e45eba684167:/DATA# python3 CRISPResso_Loop.py
@@ -112,8 +114,11 @@ Enter the delimiter(s) used in the directories for your data (e.g., '-', '_'). F
 ```
 
 and which keyword in the list to use to search the provided amplicon list such as "2".
-``` Enter the position in the file name (starting from 1) where the search term is located:2 ```
-After completion the process will exit cleanly
+``` 
+Enter the position in the file name (starting from 1) where the search term is located:2 
+```
+
+After completion the process will exit cleanly.
 ```
 INFO  @ Fri, 27 Jun 2025 01:50:25 (100.0% done):
          Analysis Complete!
@@ -130,7 +135,34 @@ INFO  @ Fri, 27 Jun 2025 01:50:25 (100.0% done):
 ```
 
 
- and then entering 
-``` python3 Read_based_quant ```
-after the inition command finishes.
-
+After the first function exits cleanly enter:
+``` 
+python3 Read_based_quant.py 
+```
+User will be prompted for the same information (deliminator and keyword location) and the process will run and exit cleanly. 
+```
+-----------------
+the Directory is: LastDirectoryContaingFastQfile
+The Search Term is: XXXXXX
+Guide Sequence Variable: XXXXXXXXXXXXXXXXXXXX
+Intended Edit/Correction Position: X
+Intended Edit/Correction Index (Position -1): X
+Guide Orientation: F
+Permissible Edit Indicies (Position -1): []
+The base at the intended edit index, 8, is an 'X'
+Guide is in the XXXXXXX orientation
+the corrected guide sequence with intended edit: XXXXXXXXXXXXXXXXXXXX
+Found alleles table input file: Alleles_frequency_table_around_sgRNA_XXXXXXXXXXXXXXXXXXXX.txt
+New file generated: ../AQLenientCorrection.csv
+the lenient correction percentage is: 0
+Found alleles table input file: Alleles_frequency_table_around_sgRNA_XXXXXXXXXXXXXXXXXXXX.txt
+New file generated: ../AQStrictCorrection.csv
+the strict correction percentage is: 0
+The number of reads that align is: 22
+The total number of reads: 34
+the independent quant sum is: 9.090909090909092
+Current Working Directory: /DATA/LastDirectoryContaingFastQfile
+Lenient correction percentage for FastQFileName: 0
+(base) root@e45eba684167:/DATA#
+```
+Data returned will be populated with usable information in place of temporary XXXXXXXX.
