@@ -83,6 +83,8 @@ if more than one fastq file is provided the function will return additional info
 
 BEQ CRISPResso Pipline can be used in two steps.
 
+### Step 1 ###
+
 First by placing the CRISPResso_Loop.py file in your fastq data directory and then entering 
 ``` 
 python3 CRISPResso_loop.py 
@@ -118,7 +120,10 @@ INFO  @ Fri, 27 Jun 2025 01:50:25 (100.0% done):
                                       \___/
 ```
 
+CRISPResso output information can be found in each directory containing fastQ files with their respective names.
 
+
+### Step 2 ###
 After the first function exits cleanly enter:
 ``` 
 python3 Read_based_quant.py 
@@ -150,6 +155,8 @@ Lenient correction percentage for FastQFileName: 0
 (base) root@1234abcdef:/DATA#
 ```
 Data returned will be populated with usable information in place of temporary XXXXXXXX.
+
+Comprehensive data compilation can be found in the **AQ_Read_Based_Correction** file in the __userNamedDirectory__ folder
 
 ## License ##
 BEQ CRISPResso Pipeline is licensed under the BSD 3-clause license.
