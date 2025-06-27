@@ -105,7 +105,7 @@ python3 CRISPResso_loop.py
 ```
 while in that directory. User will be prompted with providing a deliminator for their fastQ file names such as "_":
 ```
-(base) root@e45eba684167:/DATA# python3 CRISPResso_Loop.py
+(base) root@1234abcdef:/DATA# python3 CRISPResso_Loop.py
 First 3 directories in the current directory:
 1. firstDirectoryContainingFastQFiles
 2. secondDirectoryContainingFastQFiles
@@ -163,6 +163,22 @@ The total number of reads: 34
 the independent quant sum is: 9.090909090909092
 Current Working Directory: /DATA/LastDirectoryContaingFastQfile
 Lenient correction percentage for FastQFileName: 0
-(base) root@e45eba684167:/DATA#
+(base) root@1234abcdef:/DATA#
 ```
 Data returned will be populated with usable information in place of temporary XXXXXXXX.
+
+##License##
+BEQ CRISPResso Pipeline is licensed under the BSD 3-clause license.
+
+Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
+
+Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
+
+Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
+
+The names of its contributors may not be used to endorse or promote products derived from this software without specific prior written permission.
+
+
+## FAQ ##
+
+## Changelog ##
