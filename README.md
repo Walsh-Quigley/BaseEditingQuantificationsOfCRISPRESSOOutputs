@@ -1,23 +1,25 @@
 # BEQ CRISPResso Pipeline
 The BEQ (BaseEditingQuantifications) CRISPResso Pipeline is a library of functions designed to more efficently perfom CRISPResso functionality on numerous FASTQ files in quick succession. 
 
-BEQ CRISPResso Pipeline recives an amplicon list from the user and runs through large amounts of fastq files directory by directory to eliminate the need for manual file manipulation from a user. 
+CRISPResso_Loop.py recives an amplicon list from the user and runs through large amounts of fastq files directory by directory to eliminate the need for manual file manipulation from a user. 
 
 Requires CRISPResso to be installed on machine.
 
 Upon completion of CRISPRsso_Loop, CRISPResso output is placed in the directory beside coorisponding fastq file(s).
 
+Read_based_quant.py is a python script designed to extract editing data from the CRISPResso output. Specifically a user can select a position within the protospacer corresponding to the intended edit, the user can also select bystanders. The script will give a readout of Allele frequency of the correction both with and without accepted bystander edits and print these to a .csv file.
+
 Upon completion of Read_based_quant, output files are written to a CSV file for the user containing:
 - Directory the fastq file was from
-- Read-based Lenient Correction Percentage (with tolerated bystanders)
-- Read-based Strict Correction
-- Independent Nucleotide Based Editing Quantification Percentage (taken from Quantification_window_nucleotide_percentage_table)
+- Read-based Lenient Correction Percentage (correction of intended edit along with tolerated bystanders)
+- Read-based Strict Correction (correction of intended edit **without** tolerated bystanders)
+- Independent Nucleotide Based Editing Quantification Percentage (taken from Quantification_window_nucleotide_percentage_table, allele frequency)
 - Reads Aligned
 - Reads Total
 - Guide Sequence (reverse complement if guide is in reverse orientation from amplicon)
 - Guide Sequence relative to amplicon
-- Index of Intended Edit (+1 for position)
-- Index of Permissible Bystanders (+1 for position)
+- Index of Intended Edit
+- Index of Permissible Bystanders
 - Strings used to search the Alleles_frequency_table in the CRISPResso output
 
 <sub>BEQ CRISPResso Pipeline is distributed under the BSD license.</sub>
