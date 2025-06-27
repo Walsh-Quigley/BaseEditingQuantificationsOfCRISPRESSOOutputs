@@ -54,8 +54,11 @@ userNamedDirectory/
 │   ├── firstFastqFile.fastq
 │   └── optionalAdditionalFastqFile.fastq
 ├── secondDirectoryContainingFastQFiles
+│   └── ...
 ├── thirdDirectoryContainingFastQFiles
+│   └── ...
 ├── additionalDirectoryContainingFastQFiles
+│   └── ...
 ├── ampliconList.csv
 ├── CRISPResso_Loop.py
 └── Read_based_quant.py
@@ -90,8 +93,44 @@ userNamedDirectory/
 └── Read_based_quant.py
 </code></pre>
 
+if more than one fastq file is provided the function will return additional information for additional fastq file.
+
 ## Usage ##
 
-BEQ CRISPResso Pipline can be used by placing the CRISPResso_Loop.py file in your fastq data direcotry and then entering 
-``` python CRISPResso_loop.py ```
-while in that directory 
+BEQ CRISPResso Pipline can be used in two steps.
+
+First by placing the CRISPResso_Loop.py file in your fastq data directory and then entering 
+``` python3 CRISPResso_loop.py ```
+while in that directory. User will be prompted with providing a deliminator for their fastQ file names such as "_":
+```
+(base) root@e45eba684167:/DATA# python3 CRISPResso_Loop.py
+First 3 directories in the current directory:
+1. firstDirectoryContainingFastQFiles
+2. secondDirectoryContainingFastQFiles
+3. thirdDirectoryContainingFastQFiles
+Enter the delimiter(s) used in the directories for your data (e.g., '-', '_'). For multiple delimiters, enter them without spaces (e.g., '-_'): _
+```
+
+and which keyword in the list to use to search the provided amplicon list such as "2".
+``` Enter the position in the file name (starting from 1) where the search term is located:2 ```
+After completion the process will exit cleanly
+```
+INFO  @ Fri, 27 Jun 2025 01:50:25 (100.0% done):
+         Analysis Complete!
+
+INFO  @ Fri, 27 Jun 2025 01:50:25 (100.0% done):
+
+                                        _
+                                       '  )
+                                       .-'
+                                      (____
+                                   C)|     \
+                                     \     /
+                                      \___/
+```
+
+
+ and then entering 
+``` python3 Read_based_quant ```
+after the inition command finishes.
+
