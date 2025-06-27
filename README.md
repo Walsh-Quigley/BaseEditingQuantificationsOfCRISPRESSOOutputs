@@ -48,7 +48,24 @@ Additional information about function implementation can be found in the ```usag
 ## Directory Format ##
 Tree view of working direcotry before use should display as follows:
 
-<pre> ``` userNamedDirectory/ ├── firstDirectoryContainingFastQFiles │ ├── firstFastqFile.fastq.txt │ └── optionalAdditionalFastqFile.fastq.txt ├── secondDirectoryContainingFastQFiles │ ├── firstFastqFile.fastq.txt │ └── optionalAdditionalFastqFile.fastq.txt ├── thirdDirectoryContainingFastQFiles │ ├── firstFastqFile.fastq.txt │ └── optionalAdditionalFastqFile.fastq.txt ├── additionalDirectoryContainingFastQFiles │ ├── firstFastqFile.fastq.txt │ └── optionalAdditionalFastqFile.fastq.txt ├── ampliconList.csv.txt ├── CRISPResso_Loop.py.txt └── Read_based_quant.py.txt ``` </pre>
+<pre><code>
+userNamedDirectory/
+├── firstDirectoryContainingFastQFiles
+│   ├── firstFastqFile.fastq.txt
+│   └── optionalAdditionalFastqFile.fastq.txt
+├── secondDirectoryContainingFastQFiles
+│   ├── firstFastqFile.fastq.txt
+│   └── optionalAdditionalFastqFile.fastq.txt
+├── thirdDirectoryContainingFastQFiles
+│   ├── firstFastqFile.fastq.txt
+│   └── optionalAdditionalFastqFile.fastq.txt
+├── additionalDirectoryContainingFastQFiles
+│   ├── firstFastqFile.fastq.txt
+│   └── optionalAdditionalFastqFile.fastq.txt
+├── ampliconList.csv.txt
+├── CRISPResso_Loop.py.txt
+└── Read_based_quant.py.txt
+</code></pre>
 
 ## Usage ##
 
