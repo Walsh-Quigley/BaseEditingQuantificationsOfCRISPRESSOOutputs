@@ -46,29 +46,52 @@ BEQ CRISPResso Pipeline can be downloaded from this repository for funciton use.
 Additional information about function implementation can be found in the ```usage``` section
 
 ## Directory Format ##
-Tree view of working direcotry before use should display as follows:
+Tree view of working directory before use should display as follows:
 
 <pre><code>
 userNamedDirectory/
 ├── firstDirectoryContainingFastQFiles
-│   ├── firstFastqFile.fastq.txt
-│   └── optionalAdditionalFastqFile.fastq.txt
+│   ├── firstFastqFile.fastq
+│   └── optionalAdditionalFastqFile.fastq
 ├── secondDirectoryContainingFastQFiles
-│   ├── firstFastqFile.fastq.txt
-│   └── optionalAdditionalFastqFile.fastq.txt
 ├── thirdDirectoryContainingFastQFiles
-│   ├── firstFastqFile.fastq.txt
-│   └── optionalAdditionalFastqFile.fastq.txt
 ├── additionalDirectoryContainingFastQFiles
-│   ├── firstFastqFile.fastq.txt
-│   └── optionalAdditionalFastqFile.fastq.txt
-├── ampliconList.csv.txt
-├── CRISPResso_Loop.py.txt
-└── Read_based_quant.py.txt
+├── ampliconList.csv
+├── CRISPResso_Loop.py
+└── Read_based_quant.py
+</code></pre>
+
+Tree view of working directory after use will display as follows:
+
+<pre><code>
+userNamedDirectory/
+├── firstDirectoryContainingFastQFiles
+│   ├── firstFastqFile.fastq
+│   ├── optionalAdditionalFastqFile.fastq
+│   ├── AQLenientCorrection.CSV
+│   ├── AQStrictCorrection.CSV
+│   ├── CRISPREsso_on_firstFastqFile.html
+│   └── CRISPREsso_on_firstFastqFile/
+│       ├── 1a.Read_barplot.PDF
+│       ├── 1a.Read_barplot.PNG
+│       ├── 1b.Alignment_pi_chart.PDF
+│       └── ...
+├── secondDirectoryContainingFastQFiles
+│   └── ...
+├── thirdDirectoryContainingFastQFiles
+│   └── ...
+├── additionalDirectoryContainingFastQFiles
+│   └── ...
+├── unprocessed_data
+│   └── ...
+├── ampliconList.csv
+├── AQ_Read_Based_Correction
+├── CRISPResso_Loop.py
+└── Read_based_quant.py
 </code></pre>
 
 ## Usage ##
 
-BEQ CRISPResso Pipline can be run by placing the CRISPResso_Loop.py file in your fastq data direcotry and then entering 
+BEQ CRISPResso Pipline can be used by placing the CRISPResso_Loop.py file in your fastq data direcotry and then entering 
 ``` python CRISPResso_loop.py ```
 while in that directory 
