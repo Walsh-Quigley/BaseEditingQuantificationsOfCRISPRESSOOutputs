@@ -1,4 +1,4 @@
-# BEQ CRISPResso pipeline
+# BEQ CRISPResso Pipeline
 The BEQ (BaseEditingQuantifications) CRISPResso Pipeline is a library of functions designed to more efficently perfom CRISPResso functionality on numerous FASTQ files in quick succession. 
 
 BEQ CRISPResso Pipeline recives an amplicon list from the user and runs through large amounts of fastq files directory by directory to eliminate the need for manual file manipulation from a user. 
@@ -25,7 +25,7 @@ Upon completion of Read_based_quant, output files are written to a CSV file for 
 
 ## Download ##
 
-BEQ CRISPResso Pipeline can be downloaded from this repository for funciton use.
+BEQ CRISPResso Pipeline can be downloaded from this repository for function use.
 
 Additional information about function implementation can be found in the ```usage``` section
 
@@ -136,22 +136,22 @@ The Search Term is: XXXXXX
 Guide Sequence Variable: XXXXXXXXXXXXXXXXXXXX
 Intended Edit/Correction Position: X
 Intended Edit/Correction Index (Position -1): X
-Guide Orientation: F
+Guide Orientation: X
 Permissible Edit Indicies (Position -1): []
 The base at the intended edit index, 8, is an 'X'
 Guide is in the XXXXXXX orientation
 the corrected guide sequence with intended edit: XXXXXXXXXXXXXXXXXXXX
 Found alleles table input file: Alleles_frequency_table_around_sgRNA_XXXXXXXXXXXXXXXXXXXX.txt
 New file generated: ../AQLenientCorrection.csv
-the lenient correction percentage is: 0
+the lenient correction percentage is: X
 Found alleles table input file: Alleles_frequency_table_around_sgRNA_XXXXXXXXXXXXXXXXXXXX.txt
 New file generated: ../AQStrictCorrection.csv
-the strict correction percentage is: 0
-The number of reads that align is: 22
-The total number of reads: 34
-the independent quant sum is: 9.090909090909092
+the strict correction percentage is: X
+The number of reads that align is: XX
+The total number of reads: XX
+the independent quant sum is: X.XXXXXXXXXXXXX
 Current Working Directory: /DATA/LastDirectoryContaingFastQfile
-Lenient correction percentage for FastQFileName: 0
+Lenient correction percentage for FastQFileName: X
 (base) root@1234abcdef:/DATA#
 ```
 Data returned will be populated with usable information in place of temporary XXXXXXXX.
