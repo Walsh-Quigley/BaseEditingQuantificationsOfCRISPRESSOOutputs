@@ -19,6 +19,8 @@ The BEQ (BaseEditingQuantifications) CRISPResso Pipeline is a library of functio
 
 BEQ CRISPResso Pipeline recives an amplicon list from the user and runs through large amounts of fastq files directory by directory to eliminate the need for manual file manipulation from a user. 
 
+Requires CRISPResso to be installed on machine.
+
 Upon completion of CRISPRsso_Loop, CRISPResso output is placed in the directory beside coorisponding fastq file(s).
 
 Upon completion of Read_based_quant, output files are written to a CSV file for the user containing:
@@ -35,3 +37,21 @@ Upon completion of Read_based_quant, output files are written to a CSV file for 
 - Strings used to search the Alleles_frequency_table in the CRISPResso output
 
 <sub>BEQ CRISPResso Pipeline is distributed under the BSD license.</sub>
+
+
+## Download ##
+
+BEQ CRISPResso Pipeline can be downloaded from this repository for funciton use.
+
+Additional information about function implementation can be found in the ```usage``` section
+
+## Directory Format ##
+Tree view of working direcotry before use should display as follows:
+
+<pre> ``` userNamedDirectory/ ├── firstDirectoryContainingFastQFiles │ ├── firstFastqFile.fastq.txt │ └── optionalAdditionalFastqFile.fastq.txt ├── secondDirectoryContainingFastQFiles │ ├── firstFastqFile.fastq.txt │ └── optionalAdditionalFastqFile.fastq.txt ├── thirdDirectoryContainingFastQFiles │ ├── firstFastqFile.fastq.txt │ └── optionalAdditionalFastqFile.fastq.txt ├── additionalDirectoryContainingFastQFiles │ ├── firstFastqFile.fastq.txt │ └── optionalAdditionalFastqFile.fastq.txt ├── ampliconList.csv.txt ├── CRISPResso_Loop.py.txt └── Read_based_quant.py.txt ``` </pre>
+
+## Usage ##
+
+BEQ CRISPResso Pipline can be run by placing the CRISPResso_Loop.py file in your fastq data direcotry and then entering 
+``` python CRISPResso_loop.py ```
+while in that directory 
