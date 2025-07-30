@@ -83,10 +83,12 @@ If more than one fastq file is provided the function will return additional info
 
 ## SetUp ##
 Usage of the pipeline requires the inclusion of Common Amplicon List that contains information about the amplicons in use. The file should be a CSV and should be in the following format:
+    <pre><code>
     | Name | Protospacer_sequence | Editor | Guide Orientaion relative to amplicon | Amplicon | note | Tolerated Sequences | Tolerated positions | Intended Edits |
     | :------- | :------: | -------: |
     | Data A1  | Data B1  | Data C1  |
     | Data A2  | Data B2  | Data C2  |
+    </code></pre>
 ## Usage ##
 
 BEQ CRISPResso Pipline can be used in two steps.
