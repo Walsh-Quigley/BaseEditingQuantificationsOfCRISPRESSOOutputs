@@ -85,7 +85,8 @@ If more than one fastq file is provided the function will return additional info
 Usage of the pipeline requires the inclusion of Common Amplicon List that contains information about the amplicons in use. The file should be a CSV and should be in the following format:
 
 | Name | Protospacer_sequence | Editor | Guide Orientaion relative to amplicon | Amplicon | note | Tolerated Sequences | Tolerated positions | Intended Edits |
-
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| PAH1 | TCA... | ABE | F | CCT... | P281L | TCA... | 16 | 5 |
 
 ## Usage ##
 
