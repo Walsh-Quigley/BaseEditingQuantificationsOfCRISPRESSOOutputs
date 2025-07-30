@@ -88,6 +88,8 @@ Usage of the pipeline requires the inclusion of Common Amplicon List that contai
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | PAH1 | TCA... | ABE | F | CCT... | P281L | TCA... | 16 | 5 |
 
+An example file is included within the respository for reference. If desired, a user will be given the option upon launching the script to create a Common_Amplicon_List. After creation the file it can be placed along side the fastq files awaiting analyzing.
+
 ## Usage ##
 
 BEQ CRISPResso Pipline can be used in two steps.
