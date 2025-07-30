@@ -1,5 +1,5 @@
 # BEQ CRISPResso Pipeline
-The BEQ (BaseEditingQuantifications) CRISPResso Pipeline is a library of functions designed to more efficently perfom CRISPResso functionality on numerous FASTQ files in quick succession. 
+The BEQ (Base Editing Quantifications) CRISPResso Pipeline is a library of functions designed to more efficently perfom CRISPResso functionality on numerous FASTQ files in quick succession. 
 
 CRISPResso_Loop.py recives an amplicon list from the user and runs through large amounts of fastq files directory by directory to eliminate the need for manual file manipulation from a user. 
 
@@ -79,8 +79,14 @@ userNamedDirectory/
 └── Read_based_quant.py
 </code></pre>
 
-if more than one fastq file is provided the function will return additional information for additional fastq file.
+If more than one fastq file is provided the function will return additional information for additional fastq file.
 
+## SetUp ##
+Usage of the pipeline requires the inclusion of Common Amplicon List that contains information about the amplicons in use. The file should be a CSV and should be in the following format:
+    | Name | Protospacer_sequence | Editor | Guide Orientaion relative to amplicon | Amplicon | note | Tolerated Sequences | Tolerated positions | Intended Edits |
+    | :------- | :------: | -------: |
+    | Data A1  | Data B1  | Data C1  |
+    | Data A2  | Data B2  | Data C2  |
 ## Usage ##
 
 BEQ CRISPResso Pipline can be used in two steps.
