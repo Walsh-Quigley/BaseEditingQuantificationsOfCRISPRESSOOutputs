@@ -90,6 +90,8 @@ Usage of the pipeline requires the inclusion of Common Amplicon List that contai
 
 An example file is included within the respository for reference. If desired, a user will be given the option upon launching the script to create a Common_Amplicon_List. After creation the file it can be placed along side the fastq files awaiting analyzing.
 
+Usage of the pipeline also requires that the fastQ files generated contain the name of their amplicon within the fastq direcotory name. 
+
 ## Usage ##
 
 BEQ CRISPResso Pipline can be used in two steps.
