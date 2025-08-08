@@ -1,5 +1,6 @@
 import csv
 import os
+import re
 
 def create_common_amplicon_file():
     filename = "CommonAmpliconGeneration.csv"
@@ -37,9 +38,6 @@ def create_common_amplicon_file():
                 print("Finished adding rows.")
                 break
 
-
-import csv
-import os
 
 def retrieveCRISPRessoInputs(search_term):
     csv_path = './../Common_amplicon_list.csv'
@@ -87,3 +85,12 @@ def retrieveCRISPRessoInputs(search_term):
     print(f"Guide Orientation: {guideOrientation}")
 
     return guideSequence, ampliconSequence, guideOrientation
+
+
+def Amplicon_names(file):
+    names = []
+    with open(file, newline='') as f:
+        reader = csv.DictReader(f)
+        for row in reader:
+            names.append(row['name'].strip.upper())
+    return names

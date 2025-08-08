@@ -137,15 +137,28 @@ def create_common_amplicon_file():
                 print("Finished adding rows.")
                 break
 
+def Amplicon_names(file):
+    names = []
+    with open(file, newline='', encoding ='utf-8-sig') as f:
+        reader = csv.DictReader(f)
+
+        print("CSV Headers:", reader.fieldnames)
+        
+        for row in reader:
+            names.append(row['name'].strip().upper())
+    return names
 
 
 
-delimiter, column_index = directoryDelimiter()
+#delimiter, column_index = directoryDelimiter()
 
 
+
+create_common_amplicon_file()
+known_names = Amplicon_names("Common_amplicon_list.csv")
 
 #Main Loop
-create_common_amplicon_file()
+
 for directory in os.listdir():
     if os.path.isdir(directory):
         print("-----------")
@@ -157,17 +170,33 @@ for directory in os.listdir():
         fastq_files = gather_fastqs()
         print(f"Our fastq file(s) are: {fastq_files}")
 
-        parts = re.split(delimiter, directory)
-        if len(parts) < 3:
-            directoryErrorMessage = f"Unexpected directory name format: {directory}"
-            print(directoryErrorMessage) #print the error
-            continue #move on to the next directory
+
+        matched_name = None
+        directory_upper  = directory.upper()
+        for name in known_names:
+            if name in known_names:
+                matched_name = name
+                break
+        
+        if not matched_name:
+            print(f"No valid match found in amplicon list; {directory}")
+            os.chir("..")
+            continue
+
+        searchTerm = matched_name
+        print(f"The Search Term is: {searchTerm}")
+        
+        #parts = re.split(delimiter, directory)
+        #if len(parts) < 3:
+        #    directoryErrorMessage = f"Unexpected directory name format: {directory}"
+        #    print(directoryErrorMessage) #print the error
+        #    continue #move on to the next directory
 
 
         #getting the search term from the directory name using the dash delimiter
-        directoryName = os.path.basename(directory)
-        searchTerm = parts[column_index].upper()
-        print(f"The Search Term is: {searchTerm}")
+        #directoryName = os.path.basename(directory)
+        #searchTerm = parts[column_index].upper()
+        #print(f"The Search Term is: {searchTerm}")
 
 
         #getting the CRISPResso variables using the search term
