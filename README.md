@@ -102,20 +102,7 @@ First by placing the CRISPResso_Loop.py file in your fastq data directory and th
 ``` 
 python3 CRISPResso_loop.py 
 ```
-while in that directory. User will be prompted with providing a deliminator for their fastQ file names such as "_":
-```
-(base) root@1234abcdef:/DATA# python3 CRISPResso_Loop.py
-First 3 directories in the current directory:
-1. firstDirectoryContainingFastQFiles
-2. secondDirectoryContainingFastQFiles
-3. thirdDirectoryContainingFastQFiles
-Enter the delimiter(s) used in the directories for your data (e.g., '-', '_'). For multiple delimiters, enter them without spaces (e.g., '-_'): _
-```
-
-and which keyword in the list to use to search the provided amplicon list such as "2".
-``` 
-Enter the position in the file name (starting from 1) where the search term is located:2 
-```
+while in that directory. User will be asked if they'd like to create a Common_amplicon_list file. If needed, the user will have an opportunity to input an amplicon and its relevant information.
 
 After completion the process will exit cleanly.
 ```

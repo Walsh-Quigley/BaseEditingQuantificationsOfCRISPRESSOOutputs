@@ -109,7 +109,7 @@ def create_common_amplicon_file():
         "Tolerated Sequences", "Tolerated positions", "Intended Edits"
     ]
 
-    start = input("Do you want to create the file 'CommonAmpliconGeneration.csv'? (yes/no): ").strip().lower()
+    start = input("Do you want to create/add to the file 'Common_amplicon_list.csv'? (yes/no): ").strip().lower()
     if start != 'yes':
         print("Alright, if any information is missing you will have an opportunity to correct it later.")
         return
