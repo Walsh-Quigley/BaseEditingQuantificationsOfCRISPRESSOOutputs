@@ -102,9 +102,9 @@ def directoryDelimiter():
         return delimiter_pattern, column_index
 
 def create_common_amplicon_file():
-    filename = "CommonAmpliconGeneration.csv"
+    filename = "Common_amplicon_list.csv"
     fieldnames = [
-        "Name", "Protospacer_sequence", "Editor",
+        "name", "Protospacer_sequence", "Editor",
         "Guide Orientation relative to amplicon", "Amplicon", "note",
         "Tolerated Sequences", "Tolerated positions", "Intended Edits"
     ]
@@ -174,13 +174,13 @@ for directory in os.listdir():
         matched_name = None
         directory_upper  = directory.upper()
         for name in known_names:
-            if name in known_names:
+            if name in directory_upper:
                 matched_name = name
                 break
         
         if not matched_name:
             print(f"No valid match found in amplicon list; {directory}")
-            os.chir("..")
+            os.chdir("..")
             continue
 
         searchTerm = matched_name
